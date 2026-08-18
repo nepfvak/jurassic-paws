@@ -1,0 +1,605 @@
+/* ============================================================
+   JURASSIC PAWS — 8-BIT ARCADE THEME
+   ============================================================ */
+:root {
+  --sky: #241735;
+  --sky-deep: #170f24;
+
+  --dirt: #8a5a35;
+  --dirt-dark: #5c3a20;
+  --dirt-light: #a97b48;
+
+  --ink: #1a1327;
+  --ink-raised: #241a38;
+
+  --bone: #f2e9c9;
+  --bone-dim: #b9ac8a;
+
+  --red: #e6483d;
+  --red-deep: #b8332a;
+  --yellow: #f5c518;
+  --green: #59c36a;
+  --cyan: #46d9d1;
+  --blue: #5a8fd6;
+  --violet: #9b6bd1;
+  --orange: #e8883a;
+
+  --outline: #120c1c;
+
+  --font-display: "Press Start 2P", monospace;
+  --font-body: "VT323", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--sky);
+  color: var(--bone);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% -10%, #3a2650 0%, transparent 55%),
+    var(--sky);
+}
+
+/* scanline overlay for CRT feel */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.18) 0px,
+    rgba(0, 0, 0, 0.18) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  .flyer, .ground-runner, .cloud { display: none; }
+}
+
+/* ============================================================
+   SKY LAYER — stars, clouds, occasional pteranodon flyby
+   ============================================================ */
+.sky-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star-field, .cloud-field { position: absolute; inset: 0; }
+
+.star {
+  position: absolute;
+  background: var(--bone);
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 1; }
+}
+
+.cloud {
+  position: absolute;
+  left: 0;
+  opacity: 0.16;
+  image-rendering: pixelated;
+  animation-name: drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes drift {
+  from { transform: translateX(-25vw); }
+  to   { transform: translateX(125vw); }
+}
+
+.flyer {
+  position: absolute;
+  width: 54px;
+  aspect-ratio: 9 / 5;
+  top: 16%;
+  left: 0;
+  opacity: 0.85;
+  image-rendering: pixelated;
+  animation-name: fly-across;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.flyer .frame { position: absolute; inset: 0; }
+.flyer .frame-a { animation: flap-a 0.5s steps(1) infinite; }
+.flyer .frame-b { animation: flap-b 0.5s steps(1) infinite; }
+
+@keyframes fly-across {
+  0%   { transform: translateX(-15vw); opacity: 0; }
+  3%   { opacity: 0.85; }
+  24%  { transform: translateX(110vw); opacity: 0.85; }
+  26%  { transform: translateX(115vw); opacity: 0; }
+  100% { transform: translateX(115vw); opacity: 0; }
+}
+
+@keyframes flap-a { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes flap-b { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
+
+.ground-runner {
+  position: absolute;
+  width: 44px;
+  aspect-ratio: 11 / 6;
+  bottom: 10%;
+  left: 0;
+  opacity: 0.55;
+  image-rendering: pixelated;
+  animation-name: run-across;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.ground-runner .frame { position: absolute; inset: 0; }
+.ground-runner .frame-a { animation: flap-a 0.28s steps(1) infinite; }
+.ground-runner .frame-b { animation: flap-b 0.28s steps(1) infinite; }
+
+@keyframes run-across {
+  0%   { transform: translateX(-10vw); opacity: 0; }
+  3%   { opacity: 0.55; }
+  22%  { transform: translateX(108vw); opacity: 0.55; }
+  24%  { transform: translateX(112vw); opacity: 0; }
+  100% { transform: translateX(112vw); opacity: 0; }
+}
+
+/* ============================================================
+   DIRT + BONES BACKGROUND
+   ============================================================ */
+.dirt-field {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34vh;
+  min-height: 220px;
+  z-index: 0;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAABEElEQVR4nGPsijJlwAb0g0IZGBgurlvNQBxgwSVBvBEQwMRAJcBEpDp5RWF5RWFKDZIHG/Hw/lvCYXTpwWsGBgY9BVGsih7iNQLFRRAjIMaRB5h0DJThZn389puBgeHwtWfkGMQA1kmk5kswJ2MGPCOuBInLFD0c4YgzQWIFemBTNpy4DeEGWKhiNwjTTv2gUEgSP3ztma2WFKZ+nOkI2RR5RWGIKZB8Bzcaa+RiCSOItg/n901cfgKr5Zjg0oPXLJRn10tgB5KfaXUMlJHTIAnRjx8Q6yIdmOWkGUQw0+lgmMtEpClXLtwlx0WY+WADLDXjMheLQbhyE36jUQzSDwpFTsTIgGDKREmQpCZFZAAANNNfchirs7MAAAAASUVORK5CYII=");
+  background-repeat: repeat;
+  background-size: 144px 144px;
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+
+/* jagged grass-to-dirt edge along the top, Stardew-style */
+.dirt-field::before {
+  content: "";
+  position: absolute;
+  top: -34px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABQCAYAAADRAH3kAAABlElEQVR4nO3ZMUoEQRQG4V2ZAwhGgpgIRmJmvGAsmAp6A1PxEOIxFEwFL7DxZmJqIoKR4A30Bv0jjwcDVV86TvfQWzR0u1hIkiRJkiSKZfcEl3er39Hzx9t1+zfM2c3T+XB97i+eW9dnq3NwzZ8BwBkAnAHAGQCcAcAZANyU/qB6jv98/f7vN81KOqd/ffwM30/rk97vvidwB4AzADgDgDMAOAOAMwA4A4CL9wDd5/h0z5Dm3zveKc2fxt+8vJfGT3b3t4fP0z1Bsro6Gq6vOwCcAcAZAJwBwBkAnAHAGQDcVD2HJydnB8Pn1XN2+r40fzqHp+9L468f3krjp3uOdM5P3AHgDADOAOAMAM4A4AwAzgDgpuo5P90jVHXfI1T/357e716fdE+Qfl93ADgDgDMAOAOAMwA4A4AzALjl9elh6zlV8+YOAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAPcHfbdXtxuf62IAAAAASUVORK5CYII=");
+  background-repeat: repeat-x;
+  background-position: bottom left;
+  background-size: 96px 60px;
+  image-rendering: pixelated;
+}
+
+.bone-scatter {
+  position: absolute;
+  inset: 0;
+}
+
+.bone-scatter .pixel-grid {
+  position: absolute;
+  opacity: 0.55;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 40vh;
+}
+
+.screen[data-screen="hidden"] { display: none; }
+.screen[data-screen="active"] { display: block; animation: pop-in 260ms steps(6) both; }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.wrap { width: 100%; max-width: 640px; margin: 0 auto; }
+.wrap--narrow { max-width: 460px; }
+.center { text-align: center; }
+
+/* Arcade cabinet panel: notched pixel corners instead of border-radius */
+.panel {
+  background: var(--ink);
+  border: 4px solid var(--outline);
+  box-shadow: 0 0 0 3px var(--dirt-dark);
+  clip-path: polygon(
+    0 14px, 14px 14px, 14px 0,
+    calc(100% - 14px) 0, calc(100% - 14px) 14px, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 14px calc(100% - 14px), 0 calc(100% - 14px)
+  );
+  padding: 28px 22px;
+}
+
+/* ============================================================
+   TYPE
+   ============================================================ */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--yellow);
+  margin: 0 0 16px;
+  line-height: 1.8;
+}
+
+.display-huge {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 8vw, 44px);
+  line-height: 1.35;
+  margin: 0 0 20px;
+  color: var(--bone);
+  text-shadow: 3px 3px 0 var(--red-deep);
+}
+
+.display-huge--result {
+  font-size: clamp(18px, 5.5vw, 28px);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 var(--red-deep);
+  margin-bottom: 10px;
+}
+
+.display-med {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 5vw, 22px);
+  line-height: 1.5;
+  margin: 0 0 16px;
+  color: var(--bone);
+}
+
+.lede {
+  font-family: var(--font-body);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--bone-dim);
+  margin: 0 0 28px;
+  max-width: 48ch;
+}
+.lede--small { margin-bottom: 24px; }
+.lede strong { color: var(--yellow); }
+
+.fine-print {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--bone-dim);
+  margin-top: 16px;
+}
+
+.mono-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 18px;
+  line-height: 1.8;
+}
+.mono-tag--blink { animation: blink 0.7s steps(2, start) infinite; }
+@keyframes blink { to { opacity: 0.2; } }
+
+.result-competency {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--bone-dim);
+  margin: 0 0 24px;
+  line-height: 1.8;
+}
+
+.statement {
+  font-family: var(--font-body);
+  font-size: clamp(22px, 6vw, 28px);
+  line-height: 1.35;
+  margin: 20px 0 28px;
+  min-height: 2.6em;
+  color: var(--bone);
+}
+
+.status-line {
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--bone-dim);
+  margin: 20px 0 26px;
+}
+.status-line[data-state="ok"] { color: var(--green); }
+.status-line[data-state="err"] { color: var(--red); }
+
+/* ============================================================
+   SIGNATURE ELEMENT — arcade energy bar
+   ============================================================ */
+.sequence-strip {
+  display: flex;
+  gap: 3px;
+  margin: 10px 0 28px;
+  padding: 4px;
+  background: var(--outline);
+  border: 3px solid var(--outline);
+}
+.sequence-strip .seg {
+  flex: 1;
+  height: 14px;
+  background: var(--ink-raised);
+}
+.sequence-strip .seg.filled {
+  background: var(--yellow);
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.25);
+}
+.sequence-strip .seg.dashed {
+  background: var(--ink-raised);
+}
+
+/* ============================================================
+   FORM FIELDS
+   ============================================================ */
+.field {
+  display: block;
+  margin-bottom: 20px;
+}
+.field-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--bone-dim);
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+.field input {
+  width: 100%;
+  background: var(--sky-deep);
+  border: 3px solid var(--outline);
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: 19px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 120ms steps(2);
+}
+.field input::placeholder { color: #5a4f70; }
+.field input:focus { border-color: var(--yellow); }
+.field input:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
+.error-text {
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: 16px;
+  min-height: 20px;
+  margin: -6px 0 14px;
+}
+
+/* ============================================================
+   BUTTONS — chunky arcade cabinet buttons
+   ============================================================ */
+.btn {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 16px 22px;
+  border: 3px solid var(--outline);
+  cursor: pointer;
+  line-height: 1.6;
+  box-shadow: 4px 4px 0 var(--outline);
+  transition: transform 80ms steps(2), box-shadow 80ms steps(2);
+}
+.btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--outline);
+}
+.btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+.btn--primary {
+  background: var(--red);
+  color: var(--bone);
+}
+.btn--primary:hover { background: var(--red-deep); }
+
+.btn--ghost {
+  background: var(--ink-raised);
+  color: var(--bone-dim);
+}
+.btn--ghost:hover { color: var(--bone); border-color: var(--cyan); }
+
+/* ============================================================
+   LIKERT SCALE — power gems
+   ============================================================ */
+.likert {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.likert-btn {
+  aspect-ratio: 1;
+  border: 3px solid var(--outline);
+  background: var(--ink-raised);
+  color: var(--bone-dim);
+  font-family: var(--font-display);
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--outline);
+  transition: transform 80ms steps(2), box-shadow 80ms steps(2), background 100ms;
+}
+.likert-btn:hover { border-color: var(--cyan); color: var(--bone); }
+.likert-btn.selected {
+  background: var(--yellow);
+  border-color: var(--outline);
+  color: var(--outline);
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--outline);
+}
+.likert-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--bone-dim);
+  margin-top: 10px;
+}
+
+.quiz-meta { margin-bottom: 8px; }
+.quiz-nav { margin-top: 32px; }
+
+/* ============================================================
+   PIXEL SPRITES (rendered by JS into these grids)
+   ============================================================ */
+.pixel-grid {
+  display: grid;
+}
+.pixel-grid .px { width: 100%; height: 100%; }
+
+.sprite-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 18px;
+  margin: 4px 0 24px;
+}
+
+.sprite-dino {
+  width: 132px;
+  aspect-ratio: 12 / 10;
+}
+
+.sprite-badge {
+  width: 46px;
+  aspect-ratio: 7 / 7;
+  align-self: center;
+  padding: 6px;
+  background: var(--ink-raised);
+  border: 3px solid var(--outline);
+  box-shadow: 3px 3px 0 var(--outline);
+}
+
+/* ============================================================
+   RESULT CARDS
+   ============================================================ */
+.result-card {
+  border: 3px solid var(--outline);
+  background: var(--ink-raised);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 4px 4px 0 var(--outline);
+}
+.result-card--secondary { border-color: var(--cyan); }
+.result-card-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--bone-dim);
+  margin: 0 0 10px;
+  line-height: 1.8;
+}
+.result-card-body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--bone);
+}
+
+/* ============================================================
+   DNA PIE CHART
+   ============================================================ */
+.dna-pie-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.dna-pie {
+  width: 150px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 4px solid var(--outline);
+  box-shadow: 4px 4px 0 var(--outline);
+  flex: 0 0 auto;
+}
+
+.dna-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.dna-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--bone-dim);
+  min-width: 0;
+}
+
+.dna-swatch {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--outline);
+  flex: 0 0 auto;
+}
+
+.dna-legend-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dna-legend-pct {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--bone);
+  flex: 0 0 auto;
+}
+
+.dna-legend-item.is-winner {
+  color: var(--yellow);
+}
+.dna-legend-item.is-winner .dna-legend-pct {
+  color: var(--yellow);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 400px) {
+  .panel { padding: 22px 16px; }
+  .sprite-dino { width: 108px; }
+  .sprite-badge { width: 40px; }
+  .dna-pie { width: 130px; }
+  .dna-legend { grid-template-columns: 1fr; }
+}

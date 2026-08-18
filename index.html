@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jurassic Paws — Find Your Dino DNA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<!-- ambient sky layer: twinkling stars, drifting clouds, a periodic pteranodon flyby -->
+<div class="sky-field" aria-hidden="true">
+  <div class="star-field" id="star-field"></div>
+  <div class="cloud-field" id="cloud-field"></div>
+  <div class="flyer" id="flyer">
+    <div class="frame frame-a pixel-grid" id="flyer-a"></div>
+    <div class="frame frame-b pixel-grid" id="flyer-b"></div>
+  </div>
+</div>
+
+<!-- dirt strip along the bottom of the screen, with pixel bones scattered on it -->
+<div class="dirt-field" aria-hidden="true">
+  <div class="bone-scatter" id="bone-scatter"></div>
+  <div class="ground-runner" id="ground-runner">
+    <div class="frame frame-a pixel-grid" id="runner-a"></div>
+    <div class="frame frame-b pixel-grid" id="runner-b"></div>
+  </div>
+</div>
+
+<main class="app">
+
+  <!-- ===================== SCREEN 0: LANDING ===================== -->
+  <section class="screen" id="screen-landing" data-screen="active">
+    <div class="wrap wrap--narrow panel">
+      <p class="eyebrow">★ Career Exhibit ★</p>
+      <h1 class="display-huge">JURASSIC<br>PAWS</h1>
+      <p class="lede">Every dinosaur on exhibit carries a trait humans still use at work today. Answer 14 quick prompts and unlock your <strong>Dino&nbsp;DNA</strong> — the career-readiness power hiding inside you.</p>
+
+      <div class="sequence-strip" id="strip-landing" aria-hidden="true"></div>
+
+      <button class="btn btn--primary" id="btn-start">Press Start →</button>
+      <p class="fine-print">~2 min · your result gets emailed to you</p>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 1: INTAKE FORM ===================== -->
+  <section class="screen" id="screen-intake" data-screen="hidden">
+    <div class="wrap wrap--narrow panel">
+      <p class="eyebrow">Player Setup</p>
+      <h2 class="display-med">Enter your info</h2>
+      <p class="lede lede--small">We'll attach this to your result so it can be emailed to you.</p>
+
+      <form id="form-intake" novalidate>
+        <label class="field">
+          <span class="field-label">Full name</span>
+          <input type="text" name="name" id="input-name" required autocomplete="name" placeholder="Jamie Rivera">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Email address</span>
+          <input type="email" name="email" id="input-email" required autocomplete="email" placeholder="jamie@student.edu">
+        </label>
+
+        <label class="field">
+          <span class="field-label">University ID number</span>
+          <input type="text" name="uuid" id="input-uuid" required placeholder="U01234567">
+        </label>
+
+        <p class="error-text" id="intake-error" role="alert"></p>
+
+        <button type="submit" class="btn btn--primary">Continue →</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 2: QUIZ ===================== -->
+  <section class="screen" id="screen-quiz" data-screen="hidden">
+    <div class="wrap wrap--narrow panel">
+      <div class="quiz-meta">
+        <span class="mono-tag" id="quiz-counter">01 / 14</span>
+        <div class="sequence-strip" id="strip-quiz" aria-hidden="true"></div>
+      </div>
+
+      <h2 class="statement" id="quiz-statement">Statement text goes here.</h2>
+
+      <div class="likert" id="likert-group" role="radiogroup" aria-labelledby="quiz-statement">
+        <button class="likert-btn" data-value="1" type="button">1</button>
+        <button class="likert-btn" data-value="2" type="button">2</button>
+        <button class="likert-btn" data-value="3" type="button">3</button>
+        <button class="likert-btn" data-value="4" type="button">4</button>
+        <button class="likert-btn" data-value="5" type="button">5</button>
+      </div>
+      <div class="likert-labels">
+        <span>Disagree</span>
+        <span>Agree</span>
+      </div>
+
+      <div class="quiz-nav">
+        <button class="btn btn--ghost" id="btn-back" type="button">← Back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 3: SUBMITTING ===================== -->
+  <section class="screen" id="screen-loading" data-screen="hidden">
+    <div class="wrap wrap--narrow panel center">
+      <p class="mono-tag mono-tag--blink">LOADING…</p>
+      <div class="sequence-strip" id="strip-loading" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 4: RESULTS ===================== -->
+  <section class="screen" id="screen-results" data-screen="hidden">
+    <div class="wrap wrap--narrow panel">
+      <p class="mono-tag" id="result-code">YOU FOUND</p>
+
+      <div class="sprite-stage">
+        <div class="pixel-grid sprite-dino" id="sprite-dino"></div>
+        <div class="pixel-grid sprite-badge" id="sprite-badge"></div>
+      </div>
+
+      <p class="eyebrow" id="result-exhibit">Exhibit 01</p>
+      <h1 class="display-huge display-huge--result" id="result-dino">TYRANNOSAURUS REX</h1>
+      <p class="result-competency" id="result-competency">Leadership DNA</p>
+
+      <div class="result-card">
+        <p class="result-card-label">Prehistoric trait</p>
+        <p class="result-card-body" id="result-trait">—</p>
+      </div>
+
+      <div class="result-card">
+        <p class="result-card-label">What it means at work</p>
+        <p class="result-card-body" id="result-meaning">—</p>
+      </div>
+
+      <div class="result-card result-card--secondary" id="result-secondary-wrap" style="display:none;">
+        <p class="result-card-label">Secondary strand detected</p>
+        <p class="result-card-body" id="result-secondary">—</p>
+      </div>
+
+      <div class="result-card">
+        <p class="result-card-label">Full DNA breakdown</p>
+        <div class="dna-pie-wrap">
+          <div class="dna-pie" id="dna-pie" role="img"></div>
+          <ul class="dna-legend" id="dna-legend"></ul>
+        </div>
+      </div>
+
+      <p class="status-line" id="submit-status">Saving your result…</p>
+
+      <button class="btn btn--ghost" id="btn-restart" type="button">Play again</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/quiz.js"></script>
+</body>
+</html>
