@@ -28,6 +28,12 @@
 
   --font-display: "Press Start 2P", monospace;
   --font-body: "VT323", monospace;
+
+  /* matches .dirt-field's height formula — the ground-level actors (running
+     dino, cacti) sit outside .dirt-field's own clipped box so their bodies
+     can extend up above the horizon line instead of being cut off at it,
+     so they need this to independently line their feet up with it */
+  --horizon: max(34vh, 220px);
 }
 
 * { box-sizing: border-box; }
@@ -135,10 +141,12 @@ body {
 @keyframes flap-b { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
 
 .ground-runner {
-  position: absolute;
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
   width: 72px;
   aspect-ratio: 103 / 78;
-  top: 0;
+  bottom: var(--horizon);
   left: 0;
   opacity: 0.75;
   background-image: url("../assets/dino-runner.png");
@@ -171,8 +179,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 34vh;
-  min-height: 220px;
+  height: var(--horizon);
   z-index: 0;
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAABEElEQVR4nGPsijJlwAb0g0IZGBgurlvNQBxgwSVBvBEQwMRAJcBEpDp5RWF5RWFKDZIHG/Hw/lvCYXTpwWsGBgY9BVGsih7iNQLFRRAjIMaRB5h0DJThZn389puBgeHwtWfkGMQA1kmk5kswJ2MGPCOuBInLFD0c4YgzQWIFemBTNpy4DeEGWKhiNwjTTv2gUEgSP3ztma2WFKZ+nOkI2RR5RWGIKZB8Bzcaa+RiCSOItg/n901cfgKr5Zjg0oPXLJRn10tgB5KfaXUMlJHTIAnRjx8Q6yIdmOWkGUQw0+lgmMtEpClXLtwlx0WY+WADLDXjMheLQbhyE36jUQzSDwpFTsTIgGDKREmQpCZFZAAANNNfchirs7MAAAAASUVORK5CYII=");
   background-repeat: repeat;
@@ -197,10 +204,12 @@ body {
 }
 
 .cactus {
-  position: absolute;
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
   width: 30px;
   aspect-ratio: 5 / 10;
-  top: 0;
+  bottom: var(--horizon);
   left: 0;
   opacity: 0.9;
   image-rendering: pixelated;
@@ -636,9 +645,10 @@ body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 600px) {
+  :root { --horizon: max(20vh, 130px); }
+
   .app { padding: 20px 12px 24vh; }
 
-  .dirt-field { height: 20vh; min-height: 130px; }
   .dirt-field::before { height: 40px; background-size: 72px 40px; top: -24px; }
   .ground-runner { width: 58px; background-size: 522px 100%; }
   .cactus { width: 22px; }

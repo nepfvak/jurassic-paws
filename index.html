@@ -23,12 +23,14 @@
   </div>
 </div>
 
-<!-- dirt strip along the bottom of the screen: a running dino sprite plus a
-     couple of drifting cacti, chrome-offline-dino-game style -->
-<div class="dirt-field" aria-hidden="true">
-  <div class="ground-runner" id="ground-runner"></div>
-  <div class="cactus-field" id="cactus-field"></div>
-</div>
+<!-- dirt strip along the bottom of the screen -->
+<div class="dirt-field" aria-hidden="true"></div>
+
+<!-- a running dino sprite plus a couple of drifting cacti, standing at the
+     horizon line — kept outside .dirt-field so their bodies can extend up
+     above it instead of being clipped by its overflow:hidden -->
+<div class="ground-runner" id="ground-runner" aria-hidden="true"></div>
+<div class="cactus-field" id="cactus-field" aria-hidden="true"></div>
 
 <main class="app">
 
