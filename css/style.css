@@ -485,7 +485,9 @@ body {
 
 .sprite-dino {
   width: 132px;
-  aspect-ratio: 12 / 11;
+  aspect-ratio: 1 / 1;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .sprite-badge {

@@ -79,88 +79,13 @@ const DINOSAURS = {
 };
 
 // ============================================================
-// PIXEL ART — hand-built sprites, no external image assets
+// PIXEL ART — hand-built sprites for background decoration.
+// The results-screen dino portrait is a generated image asset
+// (assets/dino/*.png); everything below is still a hand-built matrix.
 // Each row must be equal length within a matrix (validated at build time).
 // '.' = transparent, 'O' = outline, 'B' = body, 'S' = shadow, 'E' = eye
 // white, 'H' = highlight/teeth/icon-fill, 'P' = pupil
 // ============================================================
-// Shared torso/leg block reused across most species, and the shared
-// skull-top/fill/eyes/mouth/neck block reused where a species doesn't need
-// to touch the base head shape.
-const PX_BODY_STANDARD = [
-  "..OBBBBBBO..",
-  ".OBBBBBBBBO.",
-  ".OSBBBBBBSO.",
-  "...OBO.OBO..",
-  "..OBBO.OBBO.",
-];
-
-const PX_HEAD_STANDARD = [
-  "....OOOO....",
-  "...OBBBBBO..",
-  "...OEBBEBO..",
-  "...OBHHBBO..",
-  "....OOOO....",
-];
-
-// One distinct sprite per species, built from the shared blocks above plus
-// a feature row/silhouette tweak that reads as that dino at a glance.
-const PX_DINO_SPRITES = {
-  trex: [
-    "..O.OOOO.O..",   // brow ridge
-    ...PX_HEAD_STANDARD,
-    ...PX_BODY_STANDARD
-  ],
-  raptor: [
-    "....O..O....",   // feather tufts
-    "....OOOO....",
-    "...OBBBBBO..",
-    "...OEBBEBO..",
-    "...OHBBHBO..",    // lean predatory grin
-    "....OOOO....",
-    ...PX_BODY_STANDARD
-  ],
-  trike: [
-    "..O......O..",   // brow horns
-    "..OOOOOOOO..",   // frill
-    ...PX_HEAD_STANDARD.slice(1),
-    ...PX_BODY_STANDARD
-  ],
-  ptera: [
-    "......O.....",   // backswept crest
-    ...PX_HEAD_STANDARD,
-    "O.OBBBBBBO.O",    // wingtips
-    "OOBBBBBBBBOO",
-    "OOSBBBBBBSOO",
-    "...OBO.OBO..",
-    "..OBBO.OBBO.",
-  ],
-  stego: [
-    ".O..O..O..O.",   // back plates
-    ...PX_HEAD_STANDARD,
-    ...PX_BODY_STANDARD
-  ],
-  ankylo: [
-    ".OO.OOOO.OO.",   // armor ridge
-    ...PX_HEAD_STANDARD,
-    "..OBBBBBBO..",
-    "OOBBBBBBBBOO",    // armored shoulder knobs
-    "OOSBBBBBBSOO",
-    "...OBO.OBO..",
-    "..OBBO.OBBO.",
-  ],
-  brachio: [
-    "....OOOO....",   // tiny skull
-    "...OEBBEO...",
-    "...O.BB.O...",
-    "....OOOO....",
-    ".....OO.....",   // long neck
-    ".....BB.....",
-    "....OOOO....",   // neck-to-shoulder taper
-    ...PX_BODY_STANDARD
-  ]
-};
-
 const PX_BONE = [
   ".O.....O.",
   "OOO...OOO",
@@ -299,17 +224,6 @@ const PX_ICONS = {
 // palette only has to be defined once (in style.css :root).
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
-}
-
-function paletteFor(accentName) {
-  return {
-    O: cssVar("outline"),
-    B: cssVar(accentName),
-    S: cssVar("outline"),   // shadow cells reuse outline tone for contrast
-    E: "#ffffff",
-    H: "#ffffff",
-    P: cssVar("outline")
-  };
 }
 
 function renderPixelGrid(container, matrix, palette) {
@@ -672,7 +586,10 @@ async function finishQuiz() {
 function renderResults(winnerKey, secondaryKey, totals) {
   const dino = DINOSAURS[winnerKey];
 
-  renderPixelGrid($("sprite-dino"), PX_DINO_SPRITES[winnerKey], paletteFor(dino.accent));
+  const dinoSprite = $("sprite-dino");
+  dinoSprite.src = `assets/dino/${winnerKey}.png`;
+  dinoSprite.alt = dino.name;
+
   renderPixelGrid($("sprite-badge"), PX_ICONS[dino.icon], {
     H: cssVar(dino.accent),
     O: cssVar("outline")
