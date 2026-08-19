@@ -145,17 +145,17 @@ body {
   background-repeat: no-repeat;
   background-size: 648px 100%;
   image-rendering: pixelated;
-  animation-name: run-across, run-cycle;
+  animation-name: run-loop, run-cycle;
   animation-timing-function: linear, steps(9);
   animation-iteration-count: infinite, infinite;
 }
 
-@keyframes run-across {
-  0%   { transform: translateX(-10vw); opacity: 0; }
-  3%   { opacity: 0.75; }
-  22%  { transform: translateX(108vw); opacity: 0.75; }
-  24%  { transform: translateX(112vw); opacity: 0; }
-  100% { transform: translateX(112vw); opacity: 0; }
+/* continuous ground-level loop, unlike run-across's single-pass-then-pause —
+   the dino is meant to be a persistent background presence, not a rare
+   flyby, so it should be crossing the screen at all times */
+@keyframes run-loop {
+  from { transform: translateX(-15vw); }
+  to   { transform: translateX(115vw); }
 }
 
 @keyframes run-cycle {
@@ -198,11 +198,11 @@ body {
 
 .cactus {
   position: absolute;
-  width: 22px;
+  width: 30px;
   aspect-ratio: 5 / 10;
-  bottom: 10%;
+  bottom: 8%;
   left: 0;
-  opacity: 0.6;
+  opacity: 0.9;
   image-rendering: pixelated;
   animation-name: drift;
   animation-timing-function: linear;
@@ -641,7 +641,7 @@ body {
   .dirt-field { height: 20vh; min-height: 130px; }
   .dirt-field::before { height: 40px; background-size: 72px 40px; top: -24px; }
   .ground-runner { width: 58px; background-size: 522px 100%; }
-  .cactus { width: 16px; }
+  .cactus { width: 22px; }
 
   .panel { padding: 20px 16px; }
 

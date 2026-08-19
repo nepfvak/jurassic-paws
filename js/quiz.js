@@ -331,7 +331,7 @@ function scatterCacti() {
     cactus.style.animationDelay = `${cfg.delay}s`;
 
     field.appendChild(cactus);
-    renderPixelGrid(cactus, PX_CACTUS, { O: "var(--outline)" });
+    renderPixelGrid(cactus, PX_CACTUS, { O: "var(--green)" });
   });
 }
 
@@ -350,10 +350,11 @@ function initBackgroundActors() {
   }
 
   if (runner) {
-    // two animations on this element: `run-across` (horizontal traverse,
-    // randomized like the flyer above) and `run-cycle` (leg-cycle stepping
-    // through the sprite sheet at a fixed pace) — durations/delays are
-    // comma-lists matching that animation-name order in the CSS.
+    // two animations on this element: `run-loop` (horizontal traverse,
+    // randomized like the flyer above, but looping continuously with no
+    // off-screen pause) and `run-cycle` (leg-cycle stepping through the
+    // sprite sheet at a fixed pace) — durations/delays are comma-lists
+    // matching that animation-name order in the CSS.
     const dur = 32 + Math.random() * 14;
     runner.style.animationDuration = `${dur}s, 0.7s`;
     runner.style.animationDelay = `${-Math.random() * dur}s, 0s`;
