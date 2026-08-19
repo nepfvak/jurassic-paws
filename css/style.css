@@ -617,10 +617,71 @@ body {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width: 400px) {
-  .panel { padding: 22px 16px; }
-  .sprite-dino { width: 108px; }
-  .sprite-badge { width: 40px; }
-  .dna-pie { width: 130px; }
+@media (max-width: 600px) {
+  .app { padding: 20px 12px 24vh; }
+
+  .dirt-field { height: 20vh; min-height: 130px; }
+  .dirt-field::before { height: 40px; background-size: 72px 40px; top: -24px; }
+
+  .panel { padding: 20px 16px; }
+
+  .eyebrow { font-size: 9px; margin-bottom: 12px; }
+
+  .display-huge { font-size: clamp(22px, 8.5vw, 32px); margin-bottom: 14px; }
+  .display-huge--result { font-size: clamp(15px, 5.5vw, 20px); }
+
+  .display-med { font-size: clamp(14px, 4.5vw, 18px); margin-bottom: 12px; }
+
+  .lede { font-size: 16px; margin-bottom: 18px; }
+  .lede--small { margin-bottom: 16px; }
+
+  .fine-print { font-size: 13px; margin-top: 10px; }
+
+  .mono-tag { font-size: 10px; margin-bottom: 12px; }
+  .result-competency { font-size: 11px; margin-bottom: 16px; }
+
+  .statement { font-size: clamp(18px, 5.2vw, 22px); margin: 12px 0 18px; }
+
+  .status-line { font-size: 15px; margin: 14px 0 18px; }
+
+  .sequence-strip { margin: 8px 0 18px; }
+  .sequence-strip .seg { height: 11px; }
+
+  .field { margin-bottom: 14px; }
+  .field-label { font-size: 9px; margin-bottom: 8px; }
+  .field input { font-size: 16px; padding: 10px 12px; }
+
+  .btn { font-size: 10px; padding: 13px 16px; }
+
+  .likert { gap: 6px; }
+  .likert-btn { font-size: 13px; }
+  .likert-labels { font-size: 12px; margin-top: 8px; }
+
+  .quiz-nav { margin-top: 20px; }
+  .quiz-meta { margin-bottom: 4px; }
+
+  .sprite-stage { gap: 12px; margin: 4px 0 16px; }
+  .sprite-dino { width: 96px; }
+  .sprite-badge { width: 36px; padding: 5px; }
+
+  .result-card { padding: 12px 14px; margin-bottom: 10px; }
+  .result-card-label { font-size: 9px; margin-bottom: 8px; }
+  .result-card-body { font-size: 15px; }
+
+  .dna-pie-wrap { gap: 14px; }
+  .dna-pie { width: 118px; }
+  .dna-legend-item { font-size: 13px; }
+  .dna-legend-pct { font-size: 9px; }
+
+  .dna-card-section { margin-bottom: 10px; }
+  .card-actions { gap: 8px; margin-top: 10px; }
+}
+
+@media (max-width: 380px) {
+  .panel { padding: 16px 12px; }
+  .sprite-dino { width: 82px; }
+  .sprite-badge { width: 32px; }
+  .dna-pie { width: 104px; }
   .dna-legend { grid-template-columns: 1fr; }
+  .likert-btn { font-size: 12px; }
 }
