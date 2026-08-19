@@ -179,6 +179,10 @@ body {
   to   { background-position-x: calc(-9 * var(--dino-frame-w)); }
 }
 
+/* one cactus element = one obstacle crossing the screen exactly once —
+   see spawnCactus() in js/quiz.js, which creates a fresh one at randomized
+   intervals and removes it when its single pass finishes, rather than a
+   fixed pool of elements looping forever */
 .cactus {
   position: fixed;
   z-index: 0;
@@ -191,7 +195,7 @@ body {
   image-rendering: pixelated;
   animation-name: cactus-scroll;
   animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  animation-iteration-count: 1;
 }
 
 /* obstacles approach from the right and scroll past to the left, matching

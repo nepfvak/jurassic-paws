@@ -364,26 +364,40 @@ function initBackgroundActors() {
   }
 }
 
-// ---- a couple of small cacti drifting along the dirt strip, dino-game
-// style — same single shape every time (no variety), but each one re-rolls
-// its own speed every time it finishes a lap (animationiteration), so the
-// pair doesn't settle into one fixed, obviously-repeating rhythm ----
-function scatterCacti() {
+// ---- spawns one cactus, lets it cross the screen exactly once, then
+// removes it — same single shape every time (no variety). Changing a
+// running CSS animation's duration mid-flight doesn't reset its elapsed
+// time, so it recomputes progress against the new duration and the
+// sprite jumps to some fraction of the track instead of restarting
+// cleanly (that's what caused cacti to "appear out of thin air" when
+// this used to reroll animation-duration on a looping element). Spawning
+// a fresh element per obstacle avoids that entirely — each one only ever
+// plays its single, un-modified animation from start to finish. ----
+function spawnCactus() {
   const field = document.getElementById("cactus-field");
   if (!field) return;
 
-  for (let i = 0; i < 2; i++) {
-    const cactus = document.createElement("div");
-    cactus.className = "cactus pixel-grid";
-    cactus.style.animationDuration = `${10 + Math.random() * 6}s`;
-    cactus.style.animationDelay = `${-(2 + Math.random() * 8)}s`;
-    cactus.addEventListener("animationiteration", () => {
-      cactus.style.animationDuration = `${10 + Math.random() * 6}s`;
-    });
+  const cactus = document.createElement("div");
+  cactus.className = "cactus pixel-grid";
+  cactus.style.animationDuration = `${10 + Math.random() * 6}s`;
+  cactus.addEventListener("animationend", () => cactus.remove());
 
-    field.appendChild(cactus);
-    renderPixelGrid(cactus, PX_CACTUS, { O: "var(--green)" });
-  }
+  field.appendChild(cactus);
+  renderPixelGrid(cactus, PX_CACTUS, { O: "var(--green)" });
+}
+
+// ---- like the real dino game: obstacles spawn at randomized intervals,
+// not a fixed pool looping in lockstep ----
+function scheduleCactusSpawns() {
+  const field = document.getElementById("cactus-field");
+  if (!field) return;
+
+  const next = () => {
+    spawnCactus();
+    setTimeout(next, (4 + Math.random() * 6) * 1000);
+  };
+  spawnCactus(); // one right away so the scene isn't empty on load
+  setTimeout(next, (4 + Math.random() * 6) * 1000);
 }
 
 // Canonical order used for stable tie-breaking
@@ -468,7 +482,7 @@ buildStrip($("strip-landing"), 14);
 setTimeout(() => updateStrip($("strip-landing"), 3), 400);
 scatterStars();
 scatterClouds();
-scatterCacti();
+scheduleCactusSpawns();
 initBackgroundActors();
 
 const dirtTopsoil = document.getElementById("dirt-topsoil");
