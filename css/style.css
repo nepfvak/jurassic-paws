@@ -163,7 +163,7 @@ body {
   background-repeat: no-repeat;
   background-size: 648px 54.52px;
   image-rendering: pixelated;
-  animation: run-cycle 0.45s steps(9) infinite;
+  animation: run-cycle 1.1s steps(9) infinite;
 }
 
 @keyframes run-cycle {
