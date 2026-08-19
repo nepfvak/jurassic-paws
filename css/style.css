@@ -152,13 +152,16 @@ body {
   z-index: 0;
   pointer-events: none;
   width: 72px;
-  aspect-ratio: 103 / 78;
+  /* explicit height (72 * 78/103), not aspect-ratio — combining
+     aspect-ratio-derived height with a percentage background-size is
+     unreliable across browsers (this is what broke it on mobile) */
+  height: 54.52px;
   bottom: var(--horizon);
   left: 8%;
   opacity: 0.8;
   background-image: url("../assets/dino-runner.png");
   background-repeat: no-repeat;
-  background-size: 648px 100%;
+  background-size: 648px 54.52px;
   image-rendering: pixelated;
   animation: run-cycle 0.45s steps(9) infinite;
 }
@@ -685,7 +688,7 @@ body {
 
   .dirt-field::before { height: 40px; background-size: var(--grass-tile-w) 40px; top: -24px; animation: grass-scroll 0.45s steps(72) infinite; }
   .dirt-field::after { top: 10px; height: 26px; background-size: 128px 26px; }
-  .ground-runner { width: 58px; background-size: 522px 100%; }
+  .ground-runner { width: 58px; height: 43.92px; background-size: 522px 43.92px; }
   .cactus { width: 22px; }
 
   .panel { padding: 20px 16px; }
