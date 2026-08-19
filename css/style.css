@@ -186,7 +186,12 @@ body {
   /* background-image is generated at runtime (js/quiz.js, generateDirtTexture)
      — sparse, low-opacity marks, kept subtle enough to scroll comfortably
      rather than reading as visual noise */
-  animation: ground-scroll 4.5s linear infinite;
+  /* steps(), not linear — animating background-position continuously
+     produces fractional pixel offsets each frame, which on a pixelated
+     image resamples into visible shimmering/banding. Stepping in whole
+     display-pixel increments (96 = 480px tile / 5px per source pixel)
+     keeps every frame crisp. */
+  animation: ground-scroll 4.5s steps(96) infinite;
 }
 
 @keyframes ground-scroll {
@@ -208,7 +213,7 @@ body {
   background-position-x: 0;
   background-size: var(--grass-tile-w) 60px;
   image-rendering: pixelated;
-  animation: grass-scroll 0.6s linear infinite;
+  animation: grass-scroll 0.6s steps(96) infinite;
 }
 
 @keyframes grass-scroll {
@@ -692,7 +697,7 @@ body {
 
   .app { padding: 20px 12px 24vh; }
 
-  .dirt-field::before { height: 40px; background-size: var(--grass-tile-w) 40px; top: -24px; animation-duration: 0.45s; }
+  .dirt-field::before { height: 40px; background-size: var(--grass-tile-w) 40px; top: -24px; animation: grass-scroll 0.45s steps(72) infinite; }
   .ground-runner { width: 58px; background-size: 522px 100%; }
   .cactus { width: 22px; }
 
