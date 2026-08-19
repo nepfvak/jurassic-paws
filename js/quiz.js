@@ -319,9 +319,12 @@ function scatterCacti() {
   const field = document.getElementById("cactus-field");
   if (!field) return;
 
+  // paced to roughly match the ground-runner's traverse speed (~15-22vw/s)
+  // so the whole scene reads as one consistent world scrolling by, rather
+  // than independently-drifting background elements
   const configs = [
-    { dur: 26, delay: -6 },
-    { dur: 34, delay: -20 },
+    { dur: 8, delay: -3 },
+    { dur: 11, delay: -7 },
   ];
 
   configs.forEach((cfg) => {
@@ -354,9 +357,13 @@ function initBackgroundActors() {
     // randomized like the flyer above, but looping continuously with no
     // off-screen pause) and `run-cycle` (leg-cycle stepping through the
     // sprite sheet at a fixed pace) — durations/delays are comma-lists
-    // matching that animation-name order in the CSS.
-    const dur = 32 + Math.random() * 14;
-    runner.style.animationDuration = `${dur}s, 0.7s`;
+    // matching that animation-name order in the CSS. The traverse speed
+    // and leg-cycle speed are deliberately kept in proportion (fast body
+    // travel paired with a snappy stride) so it reads as running rather
+    // than gliding — a slow body drift under a fast leg-cycle looks like
+    // the legs are spinning in place while the body coasts.
+    const dur = 6 + Math.random() * 3;
+    runner.style.animationDuration = `${dur}s, 0.5s`;
     runner.style.animationDelay = `${-Math.random() * dur}s, 0s`;
   }
 }
