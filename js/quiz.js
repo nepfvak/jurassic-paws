@@ -277,12 +277,11 @@ function canShareFiles() {
   }
 }
 
-// ---- generates a small tileable dirt-noise texture on a scratch canvas,
-// Minecraft/Stardew-style: dense fine speckle across the whole tile plus a
-// few slightly bigger mottled clumps, rather than sparse discrete shapes on
-// a flat color. Random per page load. Returns a data URL. ----
+// ---- generates a small tileable dirt texture on a scratch canvas: a flat
+// base with a handful of sparse, deliberate marks (not dense per-pixel
+// noise, which reads as static). Random per page load. Returns a data URL. ----
 function generateDirtTexture() {
-  const size = 32;
+  const size = 96;
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -294,23 +293,14 @@ function generateDirtTexture() {
   const dark = cssVar("dirt-dark");
   const light = cssVar("dirt-light");
 
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const r = Math.random();
-      if (r < 0.14) {
-        ctx.fillStyle = dark;
-        ctx.fillRect(x, y, 1, 1);
-      } else if (r < 0.26) {
-        ctx.fillStyle = light;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-  }
-
-  // a handful of bigger 2x2 mottled clumps for Stardew-style patchiness
-  for (let i = 0; i < 10; i++) {
+  // sparse, deliberate marks on an otherwise flat field — dense per-pixel
+  // noise reads as static/strobing, especially once anything nearby moves
+  const markCount = 18;
+  for (let i = 0; i < markCount; i++) {
     ctx.fillStyle = Math.random() < 0.5 ? dark : light;
-    ctx.fillRect(Math.floor(Math.random() * (size - 1)), Math.floor(Math.random() * (size - 1)), 2, 2);
+    const w = 1 + Math.floor(Math.random() * 2);
+    const h = 1 + Math.floor(Math.random() * 2);
+    ctx.fillRect(Math.floor(Math.random() * (size - w)), Math.floor(Math.random() * (size - h)), w, h);
   }
 
   return canvas.toDataURL();
