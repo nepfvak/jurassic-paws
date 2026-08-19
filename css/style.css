@@ -178,15 +178,8 @@ body {
   bottom: 0;
   height: var(--horizon);
   z-index: 0;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAABEElEQVR4nGPsijJlwAb0g0IZGBgurlvNQBxgwSVBvBEQwMRAJcBEpDp5RWF5RWFKDZIHG/Hw/lvCYXTpwWsGBgY9BVGsih7iNQLFRRAjIMaRB5h0DJThZn389puBgeHwtWfkGMQA1kmk5kswJ2MGPCOuBInLFD0c4YgzQWIFemBTNpy4DeEGWKhiNwjTTv2gUEgSP3ztma2WFKZ+nOkI2RR5RWGIKZB8Bzcaa+RiCSOItg/n901cfgKr5Zjg0oPXLJRn10tgB5KfaXUMlJHTIAnRjx8Q6yIdmOWkGUQw0+lgmMtEpClXLtwlx0WY+WADLDXjMheLQbhyE36jUQzSDwpFTsTIgGDKREmQpCZFZAAANNNfchirs7MAAAAASUVORK5CYII=");
-  background-repeat: repeat;
-  background-size: 144px 144px;
-  image-rendering: pixelated;
+  background-color: var(--dirt);
   overflow: hidden;
-  /* deliberately static, not scrolling — this tile is dense/busy enough
-     (lots of small repeating twig marks) that scrolling it continuously
-     at speed reads as a hypnotic, dizzying strobe rather than a moving
-     ground. The grass edge + cacti carry the "world in motion" cue instead. */
 }
 
 /* jagged grass-to-dirt edge along the top, Stardew-style */

@@ -133,6 +133,9 @@ const PX_DIRT_MARKS = [
   ["OO"],
   ["O"],
   [".O", "O."],
+  ["OO.", ".OO"],
+  ["O", "O", "O"],
+  ["O.", "O.", ".O"],
 ];
 
 const PX_ICONS = {
@@ -357,7 +360,7 @@ function scatterDirtMarks() {
   if (!field) return;
 
   const stripVw = 300;
-  const count = 140;
+  const count = 320;
   const colors = ["var(--dirt-dark)", "var(--outline)", "var(--dirt-light)"];
 
   const marks = [];
