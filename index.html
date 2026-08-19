@@ -24,12 +24,13 @@
 </div>
 
 <!-- dirt strip along the bottom of the screen -->
-<div class="dirt-field" aria-hidden="true">
-  <div class="ground-runner" id="ground-runner">
-    <div class="frame frame-a pixel-grid" id="runner-a"></div>
-    <div class="frame frame-b pixel-grid" id="runner-b"></div>
-  </div>
-</div>
+<div class="dirt-field" aria-hidden="true"></div>
+
+<!-- a running dino sprite plus a couple of drifting cacti, standing at the
+     horizon line — kept outside .dirt-field so their bodies can extend up
+     above it instead of being clipped by its overflow:hidden -->
+<div class="ground-runner" id="ground-runner" aria-hidden="true"></div>
+<div class="cactus-field" id="cactus-field" aria-hidden="true"></div>
 
 <main class="app">
 

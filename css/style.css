@@ -28,6 +28,16 @@
 
   --font-display: "Press Start 2P", monospace;
   --font-body: "VT323", monospace;
+
+  /* matches .dirt-field's own height — the dino/cacti sit outside
+     .dirt-field's clipped box (so their bodies can extend up above the
+     horizon line instead of being cut off at it) and need this to
+     independently line their feet up with it */
+  --horizon: max(34vh, 220px);
+
+  /* per-frame width of the dino sprite sheet — used for both its
+     background-size and the run-cycle keyframe's step distance */
+  --dino-frame-w: 72px;
 }
 
 * { box-sizing: border-box; }
@@ -65,7 +75,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-  .flyer, .ground-runner, .cloud { display: none; }
+  .flyer, .ground-runner, .cloud, .cactus { display: none; }
 }
 
 /* ============================================================
@@ -134,28 +144,54 @@ body {
 @keyframes flap-a { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes flap-b { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
 
+/* Like the real dino game: the dino itself stays put (just leg-cycling in
+   place) near the left edge, facing right, its direction of travel, while
+   the ground and obstacles scroll leftward past it. */
 .ground-runner {
-  position: absolute;
-  width: 44px;
-  aspect-ratio: 11 / 6;
-  bottom: 10%;
-  left: 0;
-  opacity: 0.55;
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 72px;
+  height: 55px;
+  bottom: var(--horizon);
+  left: 8%;
+  opacity: 0.8;
+  /* assets/dino-runner.png is pre-resized to exactly 648x55 (9 frames of
+     72x55) via Pillow/LANCZOS — displayed here at native 1:1, no runtime
+     scaling, since scaling it live with image-rendering:pixelated sampled
+     adjacent frames inconsistently (looked like frames bleeding together). */
+  background-image: url("../assets/dino-runner.png");
+  background-repeat: no-repeat;
+  background-size: 648px 55px;
   image-rendering: pixelated;
-  animation-name: run-across;
+  animation: run-cycle 1.1s steps(9) infinite;
+}
+
+@keyframes run-cycle {
+  from { background-position-x: 0; }
+  to   { background-position-x: calc(-9 * var(--dino-frame-w)); }
+}
+
+.cactus {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 30px;
+  aspect-ratio: 5 / 10;
+  bottom: var(--horizon);
+  left: 0;
+  opacity: 0.9;
+  image-rendering: pixelated;
+  animation-name: cactus-scroll;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
-.ground-runner .frame { position: absolute; inset: 0; }
-.ground-runner .frame-a { animation: flap-a 0.28s steps(1) infinite; }
-.ground-runner .frame-b { animation: flap-b 0.28s steps(1) infinite; }
 
-@keyframes run-across {
-  0%   { transform: translateX(-10vw); opacity: 0; }
-  3%   { opacity: 0.55; }
-  22%  { transform: translateX(108vw); opacity: 0.55; }
-  24%  { transform: translateX(112vw); opacity: 0; }
-  100% { transform: translateX(112vw); opacity: 0; }
+/* obstacles approach from the right and scroll past to the left, matching
+   the dino's implied direction of travel */
+@keyframes cactus-scroll {
+  from { transform: translateX(125vw); }
+  to   { transform: translateX(-25vw); }
 }
 
 /* ============================================================
@@ -618,10 +654,14 @@ body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 600px) {
+  :root { --horizon: max(20vh, 130px); --dino-frame-w: 58px; }
+
   .app { padding: 20px 12px 24vh; }
 
   .dirt-field { height: 20vh; min-height: 130px; }
   .dirt-field::before { height: 40px; background-size: 72px 40px; top: -24px; }
+  .ground-runner { width: 58px; height: 44px; background-image: url("../assets/dino-runner-mobile.png"); background-size: 522px 44px; }
+  .cactus { width: 22px; }
 
   .panel { padding: 20px 16px; }
 
