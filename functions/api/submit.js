@@ -3,9 +3,10 @@
  *
  * Body JSON: { name, email, uuid, result, resultCode, competency, secondary, scores, submittedAt }
  *
- * Does two things, in parallel:
- *   1. Appends a row to a Google Sheet (via a service account)
- *   2. Emails the student their Dino DNA card (via Resend)
+ * Appends a row to a Google Sheet via a service-account JWT flow. That's the
+ * only side effect — the student's result is rendered as a downloadable/
+ * shareable card entirely client-side, so there's no email step here and no
+ * per-day send limit to worry about at high turnout.
  *
  * Required environment variables / secrets (set in Cloudflare Pages dashboard
  * → Settings → Environment variables, or with `wrangler pages secret put`):
@@ -14,8 +15,6 @@
  *   GOOGLE_PRIVATE_KEY             full PEM private key from the service account JSON
  *                                   (keep the \n escapes — see README)
  *   GOOGLE_SHEET_ID                the long ID in the sheet's URL
- *   RESEND_API_KEY                 from resend.com
- *   RESEND_FROM                    e.g. "Jurassic Paws <results@yourschooldomain.org>"
  */
 
 export async function onRequestPost({ request, env }) {
@@ -32,26 +31,14 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ ok: false, error: "Missing required fields" }, 400);
   }
 
-  const results = await Promise.allSettled([
-    appendToSheet(env, { name, email, uuid, result, resultCode, competency, secondary, scores, submittedAt }),
-    sendResultEmail(env, { name, email, result, competency, resultCode })
-  ]);
-
-  const [sheetResult, emailResult] = results;
-  const sheetOk = sheetResult.status === "fulfilled";
-  const emailOk = emailResult.status === "fulfilled";
-
-  if (!sheetOk) console.error("Sheet append failed:", sheetResult.reason);
-  if (!emailOk) console.error("Email send failed:", emailResult.reason);
-
-  // We still return 200 if at least the sheet write succeeded, since that's
-  // the source of truth for the event. The front-end shows a generic
-  // success message either way to avoid confusing students.
-  if (!sheetOk && !emailOk) {
-    return jsonResponse({ ok: false, error: "Both save and email failed" }, 502);
+  try {
+    await appendToSheet(env, { name, email, uuid, result, resultCode, competency, secondary, scores, submittedAt });
+  } catch (err) {
+    console.error("Sheet append failed:", err);
+    return jsonResponse({ ok: false, error: "Sheet append failed" }, 502);
   }
 
-  return jsonResponse({ ok: true, sheetOk, emailOk });
+  return jsonResponse({ ok: true });
 }
 
 // ============================================================
@@ -145,44 +132,6 @@ async function importPrivateKey(pem) {
     false,
     ["sign"]
   );
-}
-
-// ============================================================
-// RESEND EMAIL
-// ============================================================
-async function sendResultEmail(env, data) {
-  const html = buildEmailHtml(data);
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: env.RESEND_FROM,
-      to: [data.email],
-      subject: `Your Dino DNA: ${data.result}`,
-      html
-    })
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Resend API error ${res.status}: ${text}`);
-  }
-}
-
-function buildEmailHtml({ name, result, competency, resultCode }) {
-  return `
-  <div style="font-family: Georgia, serif; background:#15140f; color:#ede3cf; padding:32px; max-width:520px; margin:0 auto;">
-    <p style="font-family: monospace; color:#7ea36c; font-size:12px; letter-spacing:1px; text-transform:uppercase;">Jurassic Paws · Sequence Resolved</p>
-    <p style="font-family: monospace; color:#e8a93b; font-size:13px;">&gt;&gt; ${resultCode || ""}</p>
-    <h1 style="font-size:32px; margin:8px 0 4px; color:#e8a93b;">${result}</h1>
-    <p style="font-size:14px; text-transform:uppercase; letter-spacing:1px; color:#b8ad95; margin-top:0;">${competency}</p>
-    <p style="font-size:15px; line-height:1.6;">Hi ${name},</p>
-    <p style="font-size:15px; line-height:1.6;">Thanks for stopping by the Jurassic Paws exhibit. Your Dino DNA result is above — hang onto this email as your record from the event.</p>
-  </div>`;
 }
 
 // ============================================================

@@ -1,16 +1,19 @@
 # Jurassic Paws — Dino DNA Quiz
 
 A 14-question quiz that maps students to one of 7 NACE Career Readiness
-competencies, styled as a dinosaur "DNA" reveal. Submissions are saved to a
-Google Sheet and emailed to the student automatically.
+competencies, styled as a dinosaur "DNA" reveal. Submissions are logged to a
+Google Sheet for event staff, and each student gets a downloadable/shareable
+result card rendered client-side on a `<canvas>` — no email step, so there's
+no per-day send limit to worry about if turnout spikes.
 
 ## What's in here
 
 ```
 index.html              the whole quiz UI (intake form → quiz → results)
 css/style.css            styling
-js/quiz.js                quiz questions, scoring, and submission logic
-functions/api/submit.js  Cloudflare Pages Function — saves to Sheets + sends email
+js/quiz.js                quiz questions, scoring, submission logic, and the
+                           canvas-drawn DNA card
+functions/api/submit.js  Cloudflare Pages Function — logs to Google Sheets
 ```
 
 ## 1. Set up the Google Sheet
@@ -27,14 +30,7 @@ functions/api/submit.js  Cloudflare Pages Function — saves to Sheets + sends e
 5. Back in your Sheet, click **Share** and share it with the service
    account's `client_email` (as an Editor).
 
-## 2. Set up Resend (email)
-
-1. Sign up at [resend.com](https://resend.com) — free tier covers 3,000
-   emails/month, 100/day, which should be plenty for a single event.
-2. Verify a sending domain (or use their test domain while you're building).
-3. Grab an API key from the dashboard.
-
-## 3. Deploy to Cloudflare Pages
+## 2. Deploy to Cloudflare Pages
 
 1. Push this folder to a GitHub repo, or use Cloudflare's direct-upload option.
 2. In the Cloudflare dashboard: **Workers & Pages → Create → Pages** → connect
@@ -49,8 +45,6 @@ functions/api/submit.js  Cloudflare Pages Function — saves to Sheets + sends e
    | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | the `client_email` from your service account JSON |
    | `GOOGLE_PRIVATE_KEY` | the `private_key` from that JSON, including the `-----BEGIN/END-----` lines |
    | `GOOGLE_SHEET_ID` | the ID from your Sheet's URL |
-   | `RESEND_API_KEY` | from the Resend dashboard |
-   | `RESEND_FROM` | e.g. `Jurassic Paws <results@yourdomain.org>` |
 
    > When pasting the private key into Cloudflare's dashboard, paste it with
    > real line breaks exactly as it appears in the JSON file — the code
@@ -59,15 +53,16 @@ functions/api/submit.js  Cloudflare Pages Function — saves to Sheets + sends e
 4. Redeploy (Cloudflare redeploys automatically on env var changes, or trigger
    manually from the dashboard).
 
-## 4. Test it
+## 3. Test it
 
 Open your `*.pages.dev` URL, run through the quiz, and check that:
 - a new row appears in your Google Sheet
-- the result email arrives
+- the results screen renders a DNA card and the Save Card button downloads it
 
-If either fails, check **Workers & Pages → your project → Functions →
-Real-time Logs** in the Cloudflare dashboard for the error message — the
-function logs exactly which step failed.
+If the Sheet write fails, check **Workers & Pages → your project →
+Functions → Real-time Logs** in the Cloudflare dashboard for the error
+message — the function logs exactly what failed. The card itself renders
+entirely in the browser, so it always works even if the Sheet write doesn't.
 
 ## Customizing
 

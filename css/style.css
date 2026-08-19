@@ -191,16 +191,6 @@ body {
   image-rendering: pixelated;
 }
 
-.bone-scatter {
-  position: absolute;
-  inset: 0;
-}
-
-.bone-scatter .pixel-grid {
-  position: absolute;
-  opacity: 0.55;
-}
-
 /* ============================================================
    LAYOUT
    ============================================================ */
@@ -594,6 +584,35 @@ body {
 .dna-legend-item.is-winner .dna-legend-pct {
   color: var(--yellow);
 }
+
+/* ============================================================
+   DNA CARD — canvas-rendered, downloadable/shareable result card
+   ============================================================ */
+.dna-card-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.dna-card-canvas {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  box-shadow: 4px 4px 0 var(--outline);
+  margin-top: 4px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 14px;
+}
+.card-actions .btn { flex: 1; }
 
 /* ============================================================
    RESPONSIVE

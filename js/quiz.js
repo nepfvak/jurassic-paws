@@ -86,41 +86,6 @@ const DINOSAURS = {
 // '.' = transparent, 'O' = outline, 'B' = body, 'S' = shadow, 'E' = eye
 // white, 'H' = highlight/teeth/icon-fill, 'P' = pupil
 // ============================================================
-const PX_BONE = [
-  ".O.....O.",
-  "OOO...OOO",
-  ".O.OOO.O.",
-  "OOO...OOO",
-  ".O.....O.",
-];
-
-// extra fossil bones scattered in the dirt alongside the main bone shape
-const PX_FOSSILS = {
-  longBone: [
-    ".O.........O.",
-    "OOO.......OOO",
-    ".O.OOOOOOO.O.",
-    "OOO.......OOO",
-    ".O.........O.",
-  ],
-  fragment: [
-    ".O...",
-    "OOO..",
-    ".OOO.",
-    "OOO..",
-    ".O...",
-  ],
-  tooth: [
-    "..O..",
-    ".OOO.",
-    ".OOO.",
-    "..O..",
-    "..O..",
-    "..O..",
-    "..O..",
-  ],
-};
-
 // two-frame wing-flap silhouette used for the periodic background flyby
 const PX_PTERA = [
   [
@@ -243,58 +208,67 @@ function renderPixelGrid(container, matrix, palette) {
   });
 }
 
-// ---- scatter little fossil bones across the dirt strip, one per grid cell so nothing overlaps ----
-function scatterFossils() {
-  const field = document.getElementById("bone-scatter");
-  if (!field) return;
-  const fossilPalette = { O: cssVar("outline"), S: cssVar("outline") };
+// ---- small canvas/sharing utilities used by the DNA card below ----
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+}
 
-  const shapes = [
-    { matrix: PX_BONE, weight: 4 },
-    { matrix: PX_FOSSILS.longBone, weight: 3 },
-    { matrix: PX_FOSSILS.fragment, weight: 3 },
-    { matrix: PX_FOSSILS.tooth, weight: 1 },
-  ];
-  const pool = shapes.flatMap((s) => Array(s.weight).fill(s.matrix));
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(" ");
+  const lines = [];
+  let line = "";
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (line && ctx.measureText(test).width > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
 
-  // divide the strip into a loose grid and place at most one fossil per
-  // cell (with jitter inside the cell) so pieces never stack on each other
-  const gridCols = 5;
-  const gridRows = 3;
-  const cells = [];
-  for (let r = 0; r < gridRows; r++) {
-    for (let c = 0; c < gridCols; c++) cells.push({ r, c });
-  }
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cells[i], cells[j]] = [cells[j], cells[i]];
-  }
+function hexToRgba(hex, alpha) {
+  const clean = hex.replace("#", "");
+  const value = parseInt(clean, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
-  const count = Math.min(10, cells.length);
-  const cellW = 100 / gridCols;
-  const cellH = 100 / gridRows;
+// canvas equivalent of renderPixelGrid, for drawing a matrix directly onto a
+// 2D context instead of a DOM grid (used by the DNA card's badge icon)
+function drawPixelMatrix(ctx, matrix, x, y, w, h, palette) {
+  const cols = matrix[0].length;
+  const rows = matrix.length;
+  const cellW = w / cols;
+  const cellH = h / rows;
+  matrix.forEach((row, ry) => {
+    [...row].forEach((ch, rx) => {
+      if (ch === ".") return;
+      ctx.fillStyle = palette[ch] || "transparent";
+      ctx.fillRect(x + rx * cellW, y + ry * cellH, Math.ceil(cellW) + 0.5, Math.ceil(cellH) + 0.5);
+    });
+  });
+}
 
-  for (let i = 0; i < count; i++) {
-    const { r, c } = cells[i];
-    const matrix = pool[Math.floor(Math.random() * pool.length)];
-    const rows = matrix.length;
-    const cols = matrix[0].length;
-
-    const holder = document.createElement("div");
-    holder.className = "pixel-grid";
-    const size = 20 + Math.random() * 16; // px, base dimension
-    holder.style.width = `${size}px`;
-    holder.style.aspectRatio = `${cols} / ${rows}`;
-
-    // position within this cell, with jitter, kept away from cell edges
-    const left = c * cellW + cellW * 0.2 + Math.random() * cellW * 0.5;
-    const top = r * cellH + cellH * 0.15 + Math.random() * cellH * 0.55;
-    holder.style.left = `${left}%`;
-    holder.style.top = `${top}%`;
-    holder.style.transform = `rotate(${Math.floor(Math.random() * 4) * 90}deg)`;
-
-    field.appendChild(holder);
-    renderPixelGrid(holder, matrix, fossilPalette);
+// feature-detects file-sharing support specifically (narrower than just
+// checking navigator.share, which doesn't guarantee file support)
+function canShareFiles() {
+  if (!navigator.canShare) return false;
+  try {
+    const probe = new File([""], "probe.png", { type: "image/png" });
+    return navigator.canShare({ files: [probe] });
+  } catch {
+    return false;
   }
 }
 
@@ -408,6 +382,7 @@ let studentInfo = { name: "", email: "", uuid: "" };
 let quiz = [];
 let currentIndex = 0;
 let answers = []; // answers[i] = 1..5, aligned to `quiz`
+let currentResult = null; // { winnerKey, secondaryKey, totals } for the active DNA card
 
 // ============================================================
 // DOM HELPERS
@@ -449,7 +424,6 @@ function updateStrip(container, filledCount) {
 buildStrip($("strip-landing"), 14);
 // tease: a couple of segments glow faintly on landing for atmosphere
 setTimeout(() => updateStrip($("strip-landing"), 3), 400);
-scatterFossils();
 scatterStars();
 scatterClouds();
 initBackgroundActors();
@@ -579,12 +553,260 @@ async function finishQuiz() {
 
   showScreen("screen-results");
 
-  // Fire the save+email in the background; UI updates when it resolves
+  // Log to the roster in the background; UI updates when it resolves. The
+  // card above has already rendered client-side either way.
   submitResult({ winner, secondary, totals });
+}
+
+// ---- canvas-drawn DNA card: trading-card version of the result, built to
+// save/share since email can't be relied on to scale to unknown turnout ----
+
+// Draws (or, with draw=false, just measures) the full card layout top to
+// bottom and returns the final y — used as a measure pass to size the
+// canvas correctly before the real draw pass, since trait/secondary text
+// length varies per dino.
+function layoutDnaCard(ctx, draw, opts) {
+  const { W, H, dino, winnerKey, secondaryKey, totals, dinoImg } = opts;
+  const padX = 18;
+  const contentW = W - padX * 2;
+
+  const outline = cssVar("outline");
+  const ink = cssVar("ink");
+  const inkRaised = cssVar("ink-raised");
+  const bone = cssVar("bone");
+  const boneDim = cssVar("bone-dim");
+  const yellow = cssVar("yellow");
+  const redDeep = cssVar("red-deep");
+  const cyan = cssVar("cyan");
+  const accent = cssVar(dino.accent);
+
+  if (draw) {
+    ctx.fillStyle = ink;
+    ctx.fillRect(0, 0, W, H);
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = outline;
+    ctx.strokeRect(2, 2, W - 4, H - 4);
+  }
+
+  ctx.textBaseline = "top";
+  let y = 18;
+
+  // eyebrow
+  ctx.font = `9px "Press Start 2P"`;
+  if (draw) {
+    ctx.fillStyle = yellow;
+    ctx.fillText(`EXHIBIT ${dino.exhibit} · ${dino.code}`, padX, y);
+  }
+  y += 20;
+
+  // name — shrink to fit the card width
+  let nameSize = 22;
+  const nameText = dino.name.toUpperCase();
+  ctx.font = `${nameSize}px "Press Start 2P"`;
+  while (ctx.measureText(nameText).width > contentW && nameSize > 10) {
+    nameSize -= 1;
+    ctx.font = `${nameSize}px "Press Start 2P"`;
+  }
+  if (draw) {
+    ctx.fillStyle = redDeep;
+    ctx.fillText(nameText, padX + 2, y + 2);
+    ctx.fillStyle = bone;
+    ctx.fillText(nameText, padX, y);
+  }
+  y += nameSize + 10;
+
+  // competency
+  ctx.font = `10px "Press Start 2P"`;
+  if (draw) {
+    ctx.fillStyle = boneDim;
+    ctx.fillText(dino.competency.toUpperCase(), padX, y);
+  }
+  y += 24;
+
+  // sprite + badge
+  const spriteSize = 116;
+  const spriteX = (W - spriteSize) / 2;
+  if (draw) {
+    ctx.drawImage(dinoImg, spriteX, y, spriteSize, spriteSize);
+
+    const badgeSize = 36;
+    const badgeX = spriteX + spriteSize - badgeSize + 8;
+    const badgeY = y + spriteSize - badgeSize + 8;
+    ctx.fillStyle = inkRaised;
+    ctx.fillRect(badgeX - 4, badgeY - 4, badgeSize + 8, badgeSize + 8);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = outline;
+    ctx.strokeRect(badgeX - 4, badgeY - 4, badgeSize + 8, badgeSize + 8);
+    drawPixelMatrix(ctx, PX_ICONS[dino.icon], badgeX, badgeY, badgeSize, badgeSize, {
+      H: accent,
+      O: outline
+    });
+  }
+  y += spriteSize + 18;
+
+  // trait, word-wrapped
+  ctx.font = `8px "Press Start 2P"`;
+  if (draw) {
+    ctx.fillStyle = boneDim;
+    ctx.fillText("PREHISTORIC TRAIT", padX, y);
+  }
+  y += 16;
+  ctx.font = `17px "VT323"`;
+  const traitLines = wrapText(ctx, dino.trait, contentW);
+  traitLines.forEach((line) => {
+    if (draw) {
+      ctx.fillStyle = bone;
+      ctx.fillText(line, padX, y);
+    }
+    y += 19;
+  });
+  y += 8;
+
+  // secondary strand callout, only if the quiz produced a close runner-up
+  if (secondaryKey) {
+    const sec = DINOSAURS[secondaryKey];
+    const secText = `${sec.name} — ${sec.competency}`;
+    ctx.font = `17px "VT323"`;
+    const secLines = wrapText(ctx, secText, contentW - 20);
+    const boxH = 16 + 8 + secLines.length * 19 + 8;
+
+    if (draw) {
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = cyan;
+      ctx.strokeRect(padX, y, contentW, boxH);
+      ctx.font = `8px "Press Start 2P"`;
+      ctx.fillStyle = cyan;
+      ctx.fillText("SECONDARY STRAND", padX + 10, y + 8);
+      ctx.font = `17px "VT323"`;
+      ctx.fillStyle = bone;
+      let ly = y + 8 + 16;
+      secLines.forEach((line) => {
+        ctx.fillText(line, padX + 10, ly);
+        ly += 19;
+      });
+    }
+    y += boxH + 14;
+  }
+
+  // stat readout — all 7 competencies, out of 10, winner highlighted
+  ctx.font = `9px "Press Start 2P"`;
+  if (draw) {
+    ctx.fillStyle = boneDim;
+    ctx.fillText("DNA READOUT", padX, y);
+  }
+  y += 20;
+
+  const barH = 14;
+  const rowGap = 8;
+  const labelW = 92;
+  const valueW = 26;
+  const barX = padX + labelW;
+  const barW = contentW - labelW - valueW;
+
+  DINO_ORDER.forEach((key) => {
+    const d = DINOSAURS[key];
+    const score = totals[key] || 0;
+    const pct = Math.max(0, Math.min(1, score / 10));
+    const isWinner = key === winnerKey;
+
+    if (draw) {
+      if (isWinner) {
+        ctx.fillStyle = hexToRgba(yellow, 0.12);
+        ctx.fillRect(padX - 6, y - 3, contentW + 12, barH + 6);
+      }
+
+      ctx.font = `12px "VT323"`;
+      ctx.fillStyle = isWinner ? yellow : boneDim;
+      const label = d.name.length > 12 ? d.name.split(" ")[0] : d.name;
+      ctx.fillText(label, padX, y);
+
+      ctx.fillStyle = inkRaised;
+      ctx.fillRect(barX, y, barW, barH);
+      ctx.fillStyle = cssVar(d.accent);
+      ctx.fillRect(barX, y, Math.round(barW * pct), barH);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = outline;
+      ctx.strokeRect(barX + 1, y + 1, barW - 2, barH - 2);
+
+      ctx.font = `10px "Press Start 2P"`;
+      ctx.fillStyle = isWinner ? yellow : boneDim;
+      ctx.fillText(`${score}`, barX + barW + 8, y + 2);
+    }
+    y += barH + rowGap;
+  });
+  y += 6;
+
+  // divider
+  if (draw) {
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = boneDim;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, y);
+    ctx.lineTo(W - padX, y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  y += 14;
+
+  // footer
+  ctx.font = `9px "Press Start 2P"`;
+  if (draw) {
+    ctx.fillStyle = boneDim;
+    ctx.fillText(`PLAYER: ${(studentInfo.name || "").toUpperCase()}`, padX, y);
+  }
+  y += 18;
+
+  ctx.font = `8px "Press Start 2P"`;
+  if (draw) {
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = boneDim;
+    ctx.fillText("JURASSIC PAWS · CAREER EXHIBIT", padX, y);
+    ctx.globalAlpha = 1;
+  }
+  y += 18;
+
+  return Math.round(y);
+}
+
+async function renderDnaCard(winnerKey, secondaryKey, totals) {
+  const canvas = $("dna-card");
+  if (!canvas) return;
+
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+    const dino = DINOSAURS[winnerKey];
+    const dinoImg = await loadImage(`assets/dino/${winnerKey}.png`);
+
+    const W = 320;
+    const dpr = window.devicePixelRatio || 1;
+
+    // measure pass on a scratch context to find the height this card
+    // actually needs (trait length and secondary presence both vary)
+    const scratchCtx = document.createElement("canvas").getContext("2d");
+    const H = layoutDnaCard(scratchCtx, false, {
+      W, H: 4000, dino, winnerKey, secondaryKey, totals, dinoImg
+    });
+
+    canvas.style.width = `${W}px`;
+    canvas.style.height = `${H}px`;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+
+    layoutDnaCard(ctx, true, { W, H, dino, winnerKey, secondaryKey, totals, dinoImg });
+  } catch (err) {
+    console.error("DNA card render failed:", err);
+  }
 }
 
 function renderResults(winnerKey, secondaryKey, totals) {
   const dino = DINOSAURS[winnerKey];
+  currentResult = { winnerKey, secondaryKey, totals };
 
   const dinoSprite = $("sprite-dino");
   dinoSprite.src = `assets/dino/${winnerKey}.png`;
@@ -612,6 +834,7 @@ function renderResults(winnerKey, secondaryKey, totals) {
   }
 
   renderDnaPie(totals, winnerKey);
+  renderDnaCard(winnerKey, secondaryKey, totals);
 }
 
 // ---- full DNA breakdown, drawn as a hard-edged conic-gradient pie ----
@@ -663,7 +886,7 @@ function renderDnaPie(totals, winnerKey) {
 
 async function submitResult({ winner, secondary, totals }) {
   const statusEl = $("submit-status");
-  statusEl.textContent = "Saving your result…";
+  statusEl.textContent = "Logging your result…";
   statusEl.dataset.state = "";
 
   const payload = {
@@ -685,19 +908,59 @@ async function submitResult({ winner, secondary, totals }) {
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error("Request failed");
-    statusEl.textContent = "✓ Saved — check your email for your Dino DNA card.";
+    statusEl.textContent = "✓ Added to the exhibit roster.";
     statusEl.dataset.state = "ok";
   } catch (err) {
-    statusEl.textContent = "We couldn't save this automatically — show this screen to an event volunteer.";
+    statusEl.textContent = "Couldn't reach the roster — your card above is still yours to keep.";
     statusEl.dataset.state = "err";
   }
 }
+
+// ============================================================
+// DNA CARD ACTIONS — save always works; share only on browsers that
+// support sharing files (feature-detected once at load, mostly mobile)
+// ============================================================
+if ($("btn-share-card")) {
+  $("btn-share-card").style.display = canShareFiles() ? "" : "none";
+}
+
+$("btn-save-card").addEventListener("click", () => {
+  const canvas = $("dna-card");
+  if (!canvas || !currentResult) return;
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `jurassic-paws-${currentResult.winnerKey}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, "image/png");
+});
+
+$("btn-share-card").addEventListener("click", () => {
+  const canvas = $("dna-card");
+  if (!canvas || !currentResult) return;
+  canvas.toBlob(async (blob) => {
+    if (!blob) return;
+    try {
+      const dino = DINOSAURS[currentResult.winnerKey];
+      const file = new File([blob], `jurassic-paws-${currentResult.winnerKey}.png`, { type: "image/png" });
+      await navigator.share({ files: [file], title: "My Jurassic Paws Dino DNA", text: `I got ${dino.name}!` });
+    } catch {
+      // user cancelled the share sheet, or sharing failed — nothing to do
+    }
+  }, "image/png");
+});
 
 // ============================================================
 // RESTART
 // ============================================================
 $("btn-restart").addEventListener("click", () => {
   studentInfo = { name: "", email: "", uuid: "" };
+  currentResult = null;
   $("form-intake").reset();
   showScreen("screen-landing");
 });

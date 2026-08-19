@@ -23,9 +23,8 @@
   </div>
 </div>
 
-<!-- dirt strip along the bottom of the screen, with pixel bones scattered on it -->
+<!-- dirt strip along the bottom of the screen -->
 <div class="dirt-field" aria-hidden="true">
-  <div class="bone-scatter" id="bone-scatter"></div>
   <div class="ground-runner" id="ground-runner">
     <div class="frame frame-a pixel-grid" id="runner-a"></div>
     <div class="frame frame-b pixel-grid" id="runner-b"></div>
@@ -44,7 +43,7 @@
       <div class="sequence-strip" id="strip-landing" aria-hidden="true"></div>
 
       <button class="btn btn--primary" id="btn-start">Press Start →</button>
-      <p class="fine-print">~2 min · your result gets emailed to you</p>
+      <p class="fine-print">~2 min · get a card to save or share</p>
     </div>
   </section>
 
@@ -53,7 +52,7 @@
     <div class="wrap wrap--narrow panel">
       <p class="eyebrow">Player Setup</p>
       <h2 class="display-med">Enter your info</h2>
-      <p class="lede lede--small">We'll attach this to your result so it can be emailed to you.</p>
+      <p class="lede lede--small">We'll log this with your result for the event roster.</p>
 
       <form id="form-intake" novalidate>
         <label class="field">
@@ -151,7 +150,16 @@
         </div>
       </div>
 
-      <p class="status-line" id="submit-status">Saving your result…</p>
+      <div class="dna-card-section">
+        <p class="result-card-label">Your DNA card</p>
+        <canvas id="dna-card" class="dna-card-canvas"></canvas>
+        <div class="card-actions">
+          <button class="btn btn--primary" id="btn-save-card" type="button">Save Card</button>
+          <button class="btn btn--ghost" id="btn-share-card" type="button" style="display:none;">Share</button>
+        </div>
+      </div>
+
+      <p class="status-line" id="submit-status">Logging your result…</p>
 
       <button class="btn btn--ghost" id="btn-restart" type="button">Play again</button>
     </div>
