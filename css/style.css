@@ -138,7 +138,7 @@ body {
   position: absolute;
   width: 72px;
   aspect-ratio: 103 / 78;
-  top: 6%;
+  top: 0;
   left: 0;
   opacity: 0.75;
   background-image: url("../assets/dino-runner.png");
@@ -200,7 +200,7 @@ body {
   position: absolute;
   width: 30px;
   aspect-ratio: 5 / 10;
-  top: 9%;
+  top: 0;
   left: 0;
   opacity: 0.9;
   image-rendering: pixelated;
