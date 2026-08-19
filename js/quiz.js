@@ -365,26 +365,25 @@ function initBackgroundActors() {
 }
 
 // ---- a couple of small cacti drifting along the dirt strip, dino-game
-// style — durations/delays randomized per page load so they don't spawn
-// in at the exact same moments every time ----
+// style — same single shape every time (no variety), but each one re-rolls
+// its own speed every time it finishes a lap (animationiteration), so the
+// pair doesn't settle into one fixed, obviously-repeating rhythm ----
 function scatterCacti() {
   const field = document.getElementById("cactus-field");
   if (!field) return;
 
-  const configs = [
-    { dur: 10 + Math.random() * 6, delay: -(2 + Math.random() * 8) },
-    { dur: 10 + Math.random() * 6, delay: -(2 + Math.random() * 8) },
-  ];
-
-  configs.forEach((cfg) => {
+  for (let i = 0; i < 2; i++) {
     const cactus = document.createElement("div");
     cactus.className = "cactus pixel-grid";
-    cactus.style.animationDuration = `${cfg.dur}s`;
-    cactus.style.animationDelay = `${cfg.delay}s`;
+    cactus.style.animationDuration = `${10 + Math.random() * 6}s`;
+    cactus.style.animationDelay = `${-(2 + Math.random() * 8)}s`;
+    cactus.addEventListener("animationiteration", () => {
+      cactus.style.animationDuration = `${10 + Math.random() * 6}s`;
+    });
 
     field.appendChild(cactus);
     renderPixelGrid(cactus, PX_CACTUS, { O: "var(--green)" });
-  });
+  }
 }
 
 // Canonical order used for stable tie-breaking
