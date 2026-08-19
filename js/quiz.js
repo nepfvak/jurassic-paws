@@ -112,18 +112,42 @@ const PX_CLOUD = [
   ".OOOOOOOOOO.",
 ];
 
-// small saguaro-style cactus silhouette that drifts along the dirt strip
-const PX_CACTUS = [
-  "..O..",
-  "..O..",
-  ".OO..",
-  ".OO.O",
-  ".OOOO",
-  "..O.O",
-  "..O.O",
-  "..O..",
-  "..O..",
-  ".OOO.",
+// a few small cactus silhouettes that drift along the dirt strip — varied
+// so the same one or two shapes aren't repeating on every lap
+const PX_CACTUS_SHAPES = [
+  [
+    "..O..",
+    "..O..",
+    ".OO..",
+    ".OO.O",
+    ".OOOO",
+    "..O.O",
+    "..O.O",
+    "..O..",
+    "..O..",
+    ".OOO.",
+  ],
+  [
+    ".O.",
+    ".O.",
+    ".O.",
+    "OOO",
+    ".O.",
+    ".O.",
+    ".O.",
+    "OOO",
+  ],
+  [
+    "..O..",
+    "..O..",
+    "..OOO",
+    "..O..",
+    "..O..",
+    "OOO..",
+    "..O..",
+    "..O..",
+    ".OOO.",
+  ],
 ];
 
 const PX_ICONS = {
@@ -314,28 +338,39 @@ function scatterClouds() {
   });
 }
 
-// ---- a couple of small cacti drifting along the dirt strip, dino-game style ----
+// ---- a handful of small cacti drifting along the dirt strip, dino-game style ----
+// picks a fresh random shape/size/speed for one cactus — called once to
+// set it up, then again every time it finishes a lap (animationiteration),
+// so it isn't the same shape at the same size every time around
+function rerollCactus(el) {
+  const base = window.innerWidth < 600 ? 22 : 30;
+  const scale = 0.75 + Math.random() * 0.6;
+  const shape = PX_CACTUS_SHAPES[Math.floor(Math.random() * PX_CACTUS_SHAPES.length)];
+
+  el.style.width = `${base * scale}px`;
+  el.style.aspectRatio = `${shape[0].length} / ${shape.length}`;
+  // paced to roughly match the ground/grass scroll speed so the whole
+  // scene reads as one consistent world scrolling by
+  el.style.animationDuration = `${11 + Math.random() * 7}s`;
+
+  renderPixelGrid(el, shape, { O: "var(--green)" });
+}
+
 function scatterCacti() {
   const field = document.getElementById("cactus-field");
   if (!field) return;
 
-  // paced to roughly match the ground/grass scroll speed (~160px/s) so the
-  // whole scene reads as one consistent world scrolling by, rather than
-  // independently-drifting background elements
-  const configs = [
-    { dur: 12, delay: -4 },
-    { dur: 15, delay: -9 },
-  ];
-
-  configs.forEach((cfg) => {
+  const count = 4;
+  for (let i = 0; i < count; i++) {
     const cactus = document.createElement("div");
     cactus.className = "cactus pixel-grid";
-    cactus.style.animationDuration = `${cfg.dur}s`;
-    cactus.style.animationDelay = `${cfg.delay}s`;
+    rerollCactus(cactus);
+    // stagger starting points so they aren't launching in lockstep
+    cactus.style.animationDelay = `${-Math.random() * 16}s`;
+    cactus.addEventListener("animationiteration", () => rerollCactus(cactus));
 
     field.appendChild(cactus);
-    renderPixelGrid(cactus, PX_CACTUS, { O: "var(--green)" });
-  });
+  }
 }
 
 // ---- two-frame silhouette for the periodic pteranodon flyby; the ground

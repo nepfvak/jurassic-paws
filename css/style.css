@@ -248,7 +248,6 @@ body {
   aspect-ratio: 5 / 10;
   bottom: var(--horizon);
   left: 0;
-  opacity: 0.9;
   image-rendering: pixelated;
   animation-name: cactus-scroll;
   animation-timing-function: linear;
@@ -258,8 +257,10 @@ body {
 /* obstacles approach from the right and scroll past to the left, same
    direction as the ground/grass scroll — opposite of the sky clouds' drift */
 @keyframes cactus-scroll {
-  from { transform: translateX(125vw); }
-  to   { transform: translateX(-25vw); }
+  0%   { transform: translateX(125vw); opacity: 0; }
+  4%   { opacity: 0.9; }
+  92%  { opacity: 0.9; }
+  100% { transform: translateX(-25vw); opacity: 0; }
 }
 
 /* ============================================================
@@ -696,7 +697,6 @@ body {
   .dirt-field::before { height: 40px; background-size: var(--grass-tile-w) 40px; top: -24px; animation: grass-scroll 0.45s steps(72) infinite; }
   .dirt-field::after { top: 10px; height: 26px; background-size: 128px 26px; }
   .ground-runner { width: 58px; height: 44px; background-image: url("../assets/dino-runner-mobile.png"); background-size: 522px 44px; }
-  .cactus { width: 22px; }
 
   .panel { padding: 20px 16px; }
 
