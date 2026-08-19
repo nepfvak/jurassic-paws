@@ -113,8 +113,8 @@ body {
   animation-iteration-count: infinite;
 }
 @keyframes drift {
-  from { transform: translateX(-25vw); }
-  to   { transform: translateX(125vw); }
+  from { transform: translateX(125vw); }
+  to   { transform: translateX(-25vw); }
 }
 
 .flyer {
