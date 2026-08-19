@@ -179,7 +179,19 @@ body {
   height: var(--horizon);
   z-index: 0;
   background-color: var(--dirt);
+  background-repeat: repeat;
+  background-size: 160px 160px;
+  image-rendering: pixelated;
   overflow: hidden;
+  /* background-image is generated at runtime (js/quiz.js, generateDirtTexture)
+     as fine mottled noise, Minecraft/Stardew-style, rather than a hand-drawn
+     tile — scrolls seamlessly since 160px is exactly one tile */
+  animation: ground-scroll 1.2s linear infinite;
+}
+
+@keyframes ground-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: -160px; }
 }
 
 /* jagged grass-to-dirt edge along the top, Stardew-style */
