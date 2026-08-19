@@ -227,7 +227,7 @@ body {
   background-position-x: 0;
   background-size: 1600px 44px;
   image-rendering: pixelated;
-  animation: topsoil-scroll 9s steps(200) infinite;
+  animation: topsoil-scroll 16s steps(200) infinite;
 }
 
 @keyframes topsoil-scroll {
