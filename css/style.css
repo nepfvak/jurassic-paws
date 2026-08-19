@@ -204,6 +204,30 @@ body {
   to   { background-position-x: calc(-1 * var(--grass-tile-w)); }
 }
 
+/* second terraced layer just below the grass edge — a flat, lighter
+   "topsoil" band with a jagged (transparent-backed) bottom edge that
+   blends straight into .dirt-field's own base color. Same technique as
+   the grass edge above: a small tileable silhouette, not a texture. */
+.dirt-field::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAoCAYAAAA2cfJIAAAArElEQVR4nO3ZwQ2DMBBFQYgojg5cTM4UQwfpjnQQHxDa2H/mioQseIC1rOd7vxZivaoXQC0BhBNAOAGEE0A4AYQTQDgBhBNAOAGE26oXMLt2fNZfx6tH8QIID2z6AJ5+Alvn/P9u+ABGvwHVbALDCSDc8J+A2bWHP3HeAOEEEE4A4QQQrrvB6A1K7m5Sqgcxp0EQyYOmLf1nSZv8Bt8OIP0CAQAAAAAAACxD+gJBeigsA5yiHwAAAABJRU5ErkJggg==");
+  background-repeat: repeat-x;
+  background-position-x: 0;
+  background-size: 128px 40px;
+  image-rendering: pixelated;
+  animation: topsoil-scroll 0.85s steps(128) infinite;
+}
+
+@keyframes topsoil-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: -128px; }
+}
+
 /* Individually-scattered pixel marks (twigs, pebbles, flecks), not a tiled
    image — this is what actually moves & varies now that the dense base
    texture itself stays static. Rendered twice back-to-back at a 300vw
@@ -681,6 +705,7 @@ body {
   .app { padding: 20px 12px 24vh; }
 
   .dirt-field::before { height: 40px; background-size: var(--grass-tile-w) 40px; top: -24px; animation: grass-scroll 0.45s steps(72) infinite; }
+  .dirt-field::after { top: 10px; height: 26px; background-size: 128px 26px; }
   .ground-runner { width: 58px; background-size: 522px 100%; }
   .cactus { width: 22px; }
 
