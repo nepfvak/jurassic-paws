@@ -1,23 +1,34 @@
 /**
- * POST /api/submit
+ * Worker entry point.
  *
- * Body JSON: { name, email, uuid, result, resultCode, competency, secondary, scores, submittedAt }
+ * Serves the static site (index.html, css/, js/, assets/) via the ASSETS
+ * binding, and handles POST /api/submit itself — appending a row to a
+ * Google Sheet via a service-account JWT flow. That's the only side
+ * effect; the student's result is rendered as a downloadable/shareable
+ * card entirely client-side.
  *
- * Appends a row to a Google Sheet via a service-account JWT flow. That's the
- * only side effect — the student's result is rendered as a downloadable/
- * shareable card entirely client-side, so there's no email step here and no
- * per-day send limit to worry about at high turnout.
+ * Required environment variables / secrets (set in the Cloudflare dashboard
+ * → Worker → Settings → Variables and Secrets, or with `wrangler secret put`):
  *
- * Required environment variables / secrets (set in Cloudflare Pages dashboard
- * → Settings → Environment variables, or with `wrangler pages secret put`):
- *
- *   GOOGLE_SERVICE_ACCOUNT_EMAIL   e.g. jurassic-paws@your-project.iam.gserviceaccount.com
+ *   GOOGLE_SERVICE_ACCOUNT_EMAIL   e.g. jurassic-paws-sheets@your-project.iam.gserviceaccount.com
  *   GOOGLE_PRIVATE_KEY             full PEM private key from the service account JSON
  *                                   (keep the \n escapes — see README)
  *   GOOGLE_SHEET_ID                the long ID in the sheet's URL
  */
 
-export async function onRequestPost({ request, env }) {
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/submit" && request.method === "POST") {
+      return handleSubmit(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  }
+};
+
+async function handleSubmit(request, env) {
   let body;
   try {
     body = await request.json();

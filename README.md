@@ -9,12 +9,19 @@ no per-day send limit to worry about if turnout spikes.
 ## What's in here
 
 ```
-index.html              the whole quiz UI (intake form → quiz → results)
-css/style.css            styling
-js/quiz.js                quiz questions, scoring, submission logic, and the
-                           canvas-drawn DNA card
-functions/api/submit.js  Cloudflare Pages Function — logs to Google Sheets
+index.html         the whole quiz UI (intake form → quiz → results)
+css/style.css       styling
+js/quiz.js           quiz questions, scoring, submission logic, and the
+                      canvas-drawn DNA card
+src/index.js        Cloudflare Worker — serves the static site and handles
+                      POST /api/submit (logs to Google Sheets)
+wrangler.jsonc      Worker config: static assets + the src/index.js entry point
 ```
+
+This is deployed as a single Cloudflare **Worker with static assets** (not a
+classic Pages project) — `wrangler.jsonc` tells Cloudflare to serve
+`index.html`/`css/`/`js/`/`assets/` directly, and only invoke
+`src/index.js` for requests under `/api/*`.
 
 ## 1. Set up the Google Sheet
 
@@ -30,15 +37,17 @@ functions/api/submit.js  Cloudflare Pages Function — logs to Google Sheets
 5. Back in your Sheet, click **Share** and share it with the service
    account's `client_email` (as an Editor).
 
-## 2. Deploy to Cloudflare Pages
+## 2. Deploy to Cloudflare Workers
 
-1. Push this folder to a GitHub repo, or use Cloudflare's direct-upload option.
-2. In the Cloudflare dashboard: **Workers & Pages → Create → Pages** → connect
-   the repo (or drag-and-drop upload). No build command needed — this is
-   plain HTML/CSS/JS, so leave the build output directory as `/`.
-3. Once deployed, go to your Pages project → **Settings → Environment
-   variables** and add these as **secrets** (not plain text, since they're
-   credentials):
+1. Push this folder to a GitHub repo.
+2. In the Cloudflare dashboard: **Workers & Pages → Create** → **Import a
+   repository** → connect the repo. Cloudflare reads `wrangler.jsonc` from
+   the repo, so no build command or output directory needs to be set by hand.
+   > If `wrangler.jsonc`'s `"name"` doesn't match the Worker name Cloudflare
+   > assigns on creation, update the file to match (or rename the Worker) —
+   > Workers Builds deploys to whatever project that name points at.
+3. Once deployed, go to your Worker → **Settings → Variables and Secrets**
+   and add these as **Secrets** (not plain text, since they're credentials):
 
    | Variable | Value |
    |---|---|
@@ -50,19 +59,20 @@ functions/api/submit.js  Cloudflare Pages Function — logs to Google Sheets
    > real line breaks exactly as it appears in the JSON file — the code
    > handles either real newlines or escaped `\n` sequences, so either works.
 
-4. Redeploy (Cloudflare redeploys automatically on env var changes, or trigger
-   manually from the dashboard).
+4. Redeploy (trigger manually from **Deployments**, or push any commit) so
+   the Worker picks up the new secrets.
 
 ## 3. Test it
 
-Open your `*.pages.dev` URL, run through the quiz, and check that:
+Open your `*.workers.dev` URL (or custom domain), run through the quiz, and
+check that:
 - a new row appears in your Google Sheet
 - the results screen renders a DNA card and the Save Card button downloads it
 
-If the Sheet write fails, check **Workers & Pages → your project →
-Functions → Real-time Logs** in the Cloudflare dashboard for the error
-message — the function logs exactly what failed. The card itself renders
-entirely in the browser, so it always works even if the Sheet write doesn't.
+If the Sheet write fails, check your Worker → **Logs** in the Cloudflare
+dashboard for the error message — `src/index.js` logs exactly what failed.
+The card itself renders entirely in the browser, so it always works even if
+the Sheet write doesn't.
 
 ## Customizing
 
@@ -73,4 +83,4 @@ entirely in the browser, so it always works even if the Sheet write doesn't.
 - **Colors/fonts**: all defined as CSS custom properties at the top of
   `css/style.css`.
 - **Sheet columns**: if you change what gets logged, update both the header
-  row in your Sheet and the `row` array in `functions/api/submit.js`.
+  row in your Sheet and the `row` array in `src/index.js`.

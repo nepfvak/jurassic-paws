@@ -1,0 +1,15 @@
+{
+  // If your Worker in the Cloudflare dashboard has a different name than
+  // this, change it to match — Workers Builds deploys to whatever project
+  // this "name" points at.
+  "name": "jurassic-paws",
+  "compatibility_date": "2026-08-19",
+  "main": "src/index.js",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    // Only run the Worker script for API calls; every other request is
+    // served straight from static assets without touching src/index.js.
+    "run_worker_first": ["/api/*"]
+  }
+}
