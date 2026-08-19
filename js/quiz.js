@@ -104,33 +104,26 @@ const PX_PTERA = [
   ],
 ];
 
-// two-frame running-legs silhouette for the ground critter that scurries
-// across the dirt strip in the background
-const PX_RUNNER = [
-  [
-    "...OOOO....",
-    "..OOOOOOO..",
-    ".OOOOOOOOO.",
-    "OOO..OOOOO.",
-    "O.....O.O..",
-    "......O....",
-  ],
-  [
-    "...OOOO....",
-    "..OOOOOOO..",
-    ".OOOOOOOOO.",
-    "OOO..OOOOO.",
-    ".O.....O...",
-    ".O.....O...",
-  ],
-];
-
 // blocky background cloud, drawn once and reused at a few scales
 const PX_CLOUD = [
   "..OOOO......",
   ".OOOOOOOO...",
   "OOOOOOOOOOO.",
   ".OOOOOOOOOO.",
+];
+
+// small saguaro-style cactus silhouette that drifts along the dirt strip
+const PX_CACTUS = [
+  "..O..",
+  "..O..",
+  ".OO..",
+  ".OO.O",
+  ".OOOO",
+  "..O.O",
+  "..O.O",
+  "..O..",
+  "..O..",
+  ".OOO.",
 ];
 
 const PX_ICONS = {
@@ -321,6 +314,27 @@ function scatterClouds() {
   });
 }
 
+// ---- a couple of small cacti drifting along the dirt strip, dino-game style ----
+function scatterCacti() {
+  const field = document.getElementById("cactus-field");
+  if (!field) return;
+
+  const configs = [
+    { dur: 26, delay: -6 },
+    { dur: 34, delay: -20 },
+  ];
+
+  configs.forEach((cfg) => {
+    const cactus = document.createElement("div");
+    cactus.className = "cactus pixel-grid";
+    cactus.style.animationDuration = `${cfg.dur}s`;
+    cactus.style.animationDelay = `${cfg.delay}s`;
+
+    field.appendChild(cactus);
+    renderPixelGrid(cactus, PX_CACTUS, { O: "var(--outline)" });
+  });
+}
+
 // ---- two-frame silhouettes for the periodic pteranodon flyby + ground runner ----
 function initBackgroundActors() {
   const flyer = $("flyer");
@@ -336,11 +350,13 @@ function initBackgroundActors() {
   }
 
   if (runner) {
-    renderPixelGrid($("runner-a"), PX_RUNNER[0], silhouette);
-    renderPixelGrid($("runner-b"), PX_RUNNER[1], silhouette);
+    // two animations on this element: `run-across` (horizontal traverse,
+    // randomized like the flyer above) and `run-cycle` (leg-cycle stepping
+    // through the sprite sheet at a fixed pace) — durations/delays are
+    // comma-lists matching that animation-name order in the CSS.
     const dur = 32 + Math.random() * 14;
-    runner.style.animationDuration = `${dur}s`;
-    runner.style.animationDelay = `${-Math.random() * dur}s`;
+    runner.style.animationDuration = `${dur}s, 0.7s`;
+    runner.style.animationDelay = `${-Math.random() * dur}s, 0s`;
   }
 }
 
@@ -426,6 +442,7 @@ buildStrip($("strip-landing"), 14);
 setTimeout(() => updateStrip($("strip-landing"), 3), 400);
 scatterStars();
 scatterClouds();
+scatterCacti();
 initBackgroundActors();
 
 $("btn-start").addEventListener("click", () => {

@@ -65,7 +65,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-  .flyer, .ground-runner, .cloud { display: none; }
+  .flyer, .ground-runner, .cloud, .cactus { display: none; }
 }
 
 /* ============================================================
@@ -136,26 +136,31 @@ body {
 
 .ground-runner {
   position: absolute;
-  width: 44px;
-  aspect-ratio: 11 / 6;
+  width: 72px;
+  aspect-ratio: 103 / 78;
   bottom: 10%;
   left: 0;
-  opacity: 0.55;
+  opacity: 0.75;
+  background-image: url("../assets/dino-runner.png");
+  background-repeat: no-repeat;
+  background-size: 648px 100%;
   image-rendering: pixelated;
-  animation-name: run-across;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  animation-name: run-across, run-cycle;
+  animation-timing-function: linear, steps(9);
+  animation-iteration-count: infinite, infinite;
 }
-.ground-runner .frame { position: absolute; inset: 0; }
-.ground-runner .frame-a { animation: flap-a 0.28s steps(1) infinite; }
-.ground-runner .frame-b { animation: flap-b 0.28s steps(1) infinite; }
 
 @keyframes run-across {
   0%   { transform: translateX(-10vw); opacity: 0; }
-  3%   { opacity: 0.55; }
-  22%  { transform: translateX(108vw); opacity: 0.55; }
+  3%   { opacity: 0.75; }
+  22%  { transform: translateX(108vw); opacity: 0.75; }
   24%  { transform: translateX(112vw); opacity: 0; }
   100% { transform: translateX(112vw); opacity: 0; }
+}
+
+@keyframes run-cycle {
+  from { background-position: 0 0; }
+  to   { background-position: -648px 0; }
 }
 
 /* ============================================================
@@ -189,6 +194,19 @@ body {
   background-position: bottom left;
   background-size: 96px 60px;
   image-rendering: pixelated;
+}
+
+.cactus {
+  position: absolute;
+  width: 22px;
+  aspect-ratio: 5 / 10;
+  bottom: 10%;
+  left: 0;
+  opacity: 0.6;
+  image-rendering: pixelated;
+  animation-name: drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 /* ============================================================
@@ -622,6 +640,8 @@ body {
 
   .dirt-field { height: 20vh; min-height: 130px; }
   .dirt-field::before { height: 40px; background-size: 72px 40px; top: -24px; }
+  .ground-runner { width: 58px; background-size: 522px 100%; }
+  .cactus { width: 16px; }
 
   .panel { padding: 20px 16px; }
 
