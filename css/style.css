@@ -149,7 +149,11 @@ body {
    the ground and obstacles scroll leftward past it. */
 .ground-runner {
   position: fixed;
-  z-index: 0;
+  /* higher than .cactus (z-index:0) so the dino consistently renders in
+     front when a cactus's path crosses its fixed position — same z-index
+     on both left stacking order ambiguous/DOM-order-dependent, which is
+     what read as glitchy overlap */
+  z-index: 1;
   pointer-events: none;
   width: 72px;
   height: 55px;
@@ -227,7 +231,11 @@ body {
   background-position-x: 0;
   background-size: 1600px 44px;
   image-rendering: pixelated;
-  animation: topsoil-scroll 16s steps(200) infinite;
+  /* one step per pixel (1600 steps for the 1600px loop) — steps(200) held
+     each position for 80ms, which read as visibly chunky/stuttery. Still
+     landing on whole pixels each step (not linear) to avoid the
+     sub-pixel resampling shimmer that caused problems earlier. */
+  animation: topsoil-scroll 16s steps(1600) infinite;
 }
 
 @keyframes topsoil-scroll {
