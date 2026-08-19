@@ -184,10 +184,14 @@ body {
   image-rendering: pixelated;
   overflow: hidden;
   /* background-image is generated at runtime (js/quiz.js, generateDirtTexture)
-     — mostly flat with a few sparse marks, deliberately calm and static.
-     Motion lives in the grass edge, cacti, and the small accent marks
-     layer instead; a dense/busy texture in continuous motion reads as a
-     strobing static pattern rather than a moving ground. */
+     — sparse, low-opacity marks, kept subtle enough to scroll comfortably
+     rather than reading as visual noise */
+  animation: ground-scroll 4.5s linear infinite;
+}
+
+@keyframes ground-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: -480px; }
 }
 
 /* jagged grass-to-dirt edge along the top, Stardew-style */

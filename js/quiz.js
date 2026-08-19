@@ -293,8 +293,9 @@ function generateDirtTexture() {
   const dark = cssVar("dirt-dark");
   const light = cssVar("dirt-light");
 
-  // sparse, deliberate marks on an otherwise flat field — dense per-pixel
-  // noise reads as static/strobing, especially once anything nearby moves
+  // sparse, low-opacity marks on an otherwise flat field — kept subtle so
+  // it can scroll continuously without turning into visual noise
+  ctx.globalAlpha = 0.45;
   const markCount = 18;
   for (let i = 0; i < markCount; i++) {
     ctx.fillStyle = Math.random() < 0.5 ? dark : light;
@@ -302,6 +303,7 @@ function generateDirtTexture() {
     const h = 1 + Math.floor(Math.random() * 2);
     ctx.fillRect(Math.floor(Math.random() * (size - w)), Math.floor(Math.random() * (size - h)), w, h);
   }
+  ctx.globalAlpha = 1;
 
   return canvas.toDataURL();
 }
