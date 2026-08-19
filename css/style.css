@@ -34,6 +34,10 @@
      can extend up above the horizon line instead of being cut off at it,
      so they need this to independently line their feet up with it */
   --horizon: max(34vh, 220px);
+
+  /* width of the grass-edge tile — used for both its background-size and
+     its scroll-loop distance, so the two can't drift out of sync */
+  --grass-tile-w: 96px;
 }
 
 * { box-sizing: border-box; }
@@ -140,6 +144,10 @@ body {
 @keyframes flap-a { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes flap-b { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
 
+/* Like the real dino game: the dino itself stays put (just leg-cycling in
+   place) near the left edge, facing right — the sprite was generated
+   facing left, so it's mirrored here — while the ground and obstacles
+   scroll leftward past it, giving the illusion of running forward. */
 .ground-runner {
   position: fixed;
   z-index: 0;
@@ -147,23 +155,14 @@ body {
   width: 72px;
   aspect-ratio: 103 / 78;
   bottom: var(--horizon);
-  left: 0;
-  opacity: 0.75;
+  left: 8%;
+  opacity: 0.8;
+  transform: scaleX(-1);
   background-image: url("../assets/dino-runner.png");
   background-repeat: no-repeat;
   background-size: 648px 100%;
   image-rendering: pixelated;
-  animation-name: run-loop, run-cycle;
-  animation-timing-function: linear, steps(9);
-  animation-iteration-count: infinite, infinite;
-}
-
-/* continuous ground-level loop, unlike run-across's single-pass-then-pause —
-   the dino is meant to be a persistent background presence, not a rare
-   flyby, so it should be crossing the screen at all times */
-@keyframes run-loop {
-  from { transform: translateX(-15vw); }
-  to   { transform: translateX(115vw); }
+  animation: run-cycle 0.45s steps(9) infinite;
 }
 
 @keyframes run-cycle {
@@ -186,6 +185,14 @@ body {
   background-size: 144px 144px;
   image-rendering: pixelated;
   overflow: hidden;
+  animation: ground-scroll 0.9s linear infinite;
+}
+
+/* seamless loop — 144px is exactly one dirt tile, so the scroll wraps with
+   no visible seam */
+@keyframes ground-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: -144px; }
 }
 
 /* jagged grass-to-dirt edge along the top, Stardew-style */
@@ -198,9 +205,16 @@ body {
   height: 60px;
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABQCAYAAADRAH3kAAABlElEQVR4nO3ZMUoEQRQG4V2ZAwhGgpgIRmJmvGAsmAp6A1PxEOIxFEwFL7DxZmJqIoKR4A30Bv0jjwcDVV86TvfQWzR0u1hIkiRJkiSKZfcEl3er39Hzx9t1+zfM2c3T+XB97i+eW9dnq3NwzZ8BwBkAnAHAGQCcAcAZANyU/qB6jv98/f7vN81KOqd/ffwM30/rk97vvidwB4AzADgDgDMAOAOAMwA4A4CL9wDd5/h0z5Dm3zveKc2fxt+8vJfGT3b3t4fP0z1Bsro6Gq6vOwCcAcAZAJwBwBkAnAHAGQDcVD2HJydnB8Pn1XN2+r40fzqHp+9L468f3krjp3uOdM5P3AHgDADOAOAMAM4A4AwAzgDgpuo5P90jVHXfI1T/357e716fdE+Qfl93ADgDgDMAOAOAMwA4A4AzALjl9elh6zlV8+YOAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAGcAcAYAZwBwBgBnAHAGAPcHfbdXtxuf62IAAAAASUVORK5CYII=");
   background-repeat: repeat-x;
-  background-position: bottom left;
-  background-size: 96px 60px;
+  background-position-y: bottom;
+  background-position-x: 0;
+  background-size: var(--grass-tile-w) 60px;
   image-rendering: pixelated;
+  animation: grass-scroll 0.6s linear infinite;
+}
+
+@keyframes grass-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: calc(-1 * var(--grass-tile-w)); }
 }
 
 .cactus {
@@ -213,9 +227,16 @@ body {
   left: 0;
   opacity: 0.9;
   image-rendering: pixelated;
-  animation-name: drift;
+  animation-name: cactus-scroll;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+/* obstacles approach from the right and scroll past to the left, same
+   direction as the ground/grass scroll — opposite of the sky clouds' drift */
+@keyframes cactus-scroll {
+  from { transform: translateX(125vw); }
+  to   { transform: translateX(-25vw); }
 }
 
 /* ============================================================
@@ -645,11 +666,11 @@ body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 600px) {
-  :root { --horizon: max(20vh, 130px); }
+  :root { --horizon: max(20vh, 130px); --grass-tile-w: 72px; }
 
   .app { padding: 20px 12px 24vh; }
 
-  .dirt-field::before { height: 40px; background-size: 72px 40px; top: -24px; }
+  .dirt-field::before { height: 40px; background-size: var(--grass-tile-w) 40px; top: -24px; animation-duration: 0.45s; }
   .ground-runner { width: 58px; background-size: 522px 100%; }
   .cactus { width: 22px; }
 

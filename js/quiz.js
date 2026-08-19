@@ -319,12 +319,12 @@ function scatterCacti() {
   const field = document.getElementById("cactus-field");
   if (!field) return;
 
-  // paced to roughly match the ground-runner's traverse speed (~15-22vw/s)
-  // so the whole scene reads as one consistent world scrolling by, rather
-  // than independently-drifting background elements
+  // paced to roughly match the ground/grass scroll speed (~160px/s) so the
+  // whole scene reads as one consistent world scrolling by, rather than
+  // independently-drifting background elements
   const configs = [
-    { dur: 8, delay: -3 },
-    { dur: 11, delay: -7 },
+    { dur: 12, delay: -4 },
+    { dur: 15, delay: -9 },
   ];
 
   configs.forEach((cfg) => {
@@ -338,10 +338,11 @@ function scatterCacti() {
   });
 }
 
-// ---- two-frame silhouettes for the periodic pteranodon flyby + ground runner ----
+// ---- two-frame silhouette for the periodic pteranodon flyby; the ground
+// runner's leg-cycle is a fixed CSS animation now (it doesn't move
+// horizontally, so there's nothing here left to randomize for it) ----
 function initBackgroundActors() {
   const flyer = $("flyer");
-  const runner = $("ground-runner");
   const silhouette = { O: "var(--outline)" };
 
   if (flyer) {
@@ -350,21 +351,6 @@ function initBackgroundActors() {
     const dur = 24 + Math.random() * 10;
     flyer.style.animationDuration = `${dur}s`;
     flyer.style.animationDelay = `${-Math.random() * dur}s`;
-  }
-
-  if (runner) {
-    // two animations on this element: `run-loop` (horizontal traverse,
-    // randomized like the flyer above, but looping continuously with no
-    // off-screen pause) and `run-cycle` (leg-cycle stepping through the
-    // sprite sheet at a fixed pace) — durations/delays are comma-lists
-    // matching that animation-name order in the CSS. The traverse speed
-    // and leg-cycle speed are deliberately kept in proportion (fast body
-    // travel paired with a snappy stride) so it reads as running rather
-    // than gliding — a slow body drift under a fast leg-cycle looks like
-    // the legs are spinning in place while the body coasts.
-    const dur = 6 + Math.random() * 3;
-    runner.style.animationDuration = `${dur}s, 0.5s`;
-    runner.style.animationDelay = `${-Math.random() * dur}s, 0s`;
   }
 }
 
