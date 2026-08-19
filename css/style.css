@@ -179,24 +179,7 @@ body {
   height: var(--horizon);
   z-index: 0;
   background-color: var(--dirt);
-  background-repeat: repeat;
-  background-size: 480px 480px;
-  image-rendering: pixelated;
   overflow: hidden;
-  /* background-image is generated at runtime (js/quiz.js, generateDirtTexture)
-     — sparse, low-opacity marks, kept subtle enough to scroll comfortably
-     rather than reading as visual noise */
-  /* steps(), not linear — animating background-position continuously
-     produces fractional pixel offsets each frame, which on a pixelated
-     image resamples into visible shimmering/banding. Stepping in whole
-     display-pixel increments (96 = 480px tile / 5px per source pixel)
-     keeps every frame crisp. */
-  animation: ground-scroll 4.5s steps(96) infinite;
-}
-
-@keyframes ground-scroll {
-  from { background-position-x: 0; }
-  to   { background-position-x: -480px; }
 }
 
 /* jagged grass-to-dirt edge along the top, Stardew-style */

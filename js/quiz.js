@@ -277,37 +277,6 @@ function canShareFiles() {
   }
 }
 
-// ---- generates a small tileable dirt texture on a scratch canvas: a flat
-// base with a handful of sparse, deliberate marks (not dense per-pixel
-// noise, which reads as static). Random per page load. Returns a data URL. ----
-function generateDirtTexture() {
-  const size = 96;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-
-  ctx.fillStyle = cssVar("dirt");
-  ctx.fillRect(0, 0, size, size);
-
-  const dark = cssVar("dirt-dark");
-  const light = cssVar("dirt-light");
-
-  // sparse, low-opacity marks on an otherwise flat field — kept subtle so
-  // it can scroll continuously without turning into visual noise
-  ctx.globalAlpha = 0.45;
-  const markCount = 18;
-  for (let i = 0; i < markCount; i++) {
-    ctx.fillStyle = Math.random() < 0.5 ? dark : light;
-    const w = 1 + Math.floor(Math.random() * 2);
-    const h = 1 + Math.floor(Math.random() * 2);
-    ctx.fillRect(Math.floor(Math.random() * (size - w)), Math.floor(Math.random() * (size - h)), w, h);
-  }
-  ctx.globalAlpha = 1;
-
-  return canvas.toDataURL();
-}
-
 // ---- twinkling stars, scattered across the upper sky ----
 function scatterStars() {
   const field = document.getElementById("star-field");
@@ -390,8 +359,6 @@ function scatterDirtMarks() {
   const field = document.getElementById("dirt-marks");
   if (!field) return;
 
-  // sparse now — the fine noise texture (generateDirtTexture) carries most
-  // of the ground detail, these are just occasional bigger accent clumps
   const stripVw = 300;
   const count = 30;
   const colors = ["var(--dirt-dark)", "var(--outline)", "var(--dirt-light)"];
@@ -519,8 +486,6 @@ buildStrip($("strip-landing"), 14);
 setTimeout(() => updateStrip($("strip-landing"), 3), 400);
 scatterStars();
 scatterClouds();
-const dirtField = document.querySelector(".dirt-field");
-if (dirtField) dirtField.style.backgroundImage = `url(${generateDirtTexture()})`;
 scatterDirtMarks();
 scatterCacti();
 initBackgroundActors();
