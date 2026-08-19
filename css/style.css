@@ -211,6 +211,29 @@ body {
   to   { background-position-x: calc(-1 * var(--grass-tile-w)); }
 }
 
+/* Individually-scattered pixel marks (twigs, pebbles, flecks), not a tiled
+   image — this is what actually moves & varies now that the dense base
+   texture itself stays static. Rendered twice back-to-back at a 300vw
+   spacing (js/quiz.js) so the loop is seamless: after exactly 300vw of
+   travel, the second copy sits exactly where the first started. */
+.dirt-marks {
+  position: absolute;
+  inset: 0;
+  width: 600vw;
+  animation: marks-scroll 26s linear infinite;
+}
+
+.dirt-mark {
+  position: absolute;
+  opacity: 0.7;
+  image-rendering: pixelated;
+}
+
+@keyframes marks-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-300vw); }
+}
+
 .cactus {
   position: fixed;
   z-index: 0;

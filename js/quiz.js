@@ -126,6 +126,15 @@ const PX_CACTUS = [
   ".OOO.",
 ];
 
+// tiny ground-clutter shapes (twig, pebble, fleck) scattered at random
+// across the dirt strip — see scatterDirtMarks
+const PX_DIRT_MARKS = [
+  ["O.O", ".O."],
+  ["OO"],
+  ["O"],
+  [".O", "O."],
+];
+
 const PX_ICONS = {
   crown: [
     ".H.H.H.",
@@ -338,6 +347,44 @@ function scatterCacti() {
   });
 }
 
+// ---- scattered twigs/pebbles/flecks drifting across the dirt strip. These
+// are individually-placed random marks, not a tiled image, so the ground
+// texture actually varies as it scrolls instead of repeating a small tile.
+// Rendered twice, offset by one strip-width apart, so the loop is seamless
+// (the CSS animation travels exactly one strip-width before resetting). ----
+function scatterDirtMarks() {
+  const field = document.getElementById("dirt-marks");
+  if (!field) return;
+
+  const stripVw = 300;
+  const count = 140;
+  const colors = ["var(--dirt-dark)", "var(--outline)", "var(--dirt-light)"];
+
+  const marks = [];
+  for (let i = 0; i < count; i++) {
+    marks.push({
+      x: Math.random() * stripVw,
+      y: 8 + Math.random() * 84,
+      shape: PX_DIRT_MARKS[Math.floor(Math.random() * PX_DIRT_MARKS.length)],
+      color: colors[Math.floor(Math.random() * colors.length)],
+      scale: 0.7 + Math.random() * 0.8,
+    });
+  }
+
+  [0, stripVw].forEach((offset) => {
+    marks.forEach((m) => {
+      const el = document.createElement("div");
+      el.className = "dirt-mark pixel-grid";
+      el.style.left = `${m.x + offset}vw`;
+      el.style.top = `${m.y}%`;
+      el.style.width = `${8 * m.scale}px`;
+      el.style.aspectRatio = `${m.shape[0].length} / ${m.shape.length}`;
+      field.appendChild(el);
+      renderPixelGrid(el, m.shape, { O: m.color });
+    });
+  });
+}
+
 // ---- two-frame silhouette for the periodic pteranodon flyby; the ground
 // runner's leg-cycle is a fixed CSS animation now (it doesn't move
 // horizontally, so there's nothing here left to randomize for it) ----
@@ -436,6 +483,7 @@ buildStrip($("strip-landing"), 14);
 setTimeout(() => updateStrip($("strip-landing"), 3), 400);
 scatterStars();
 scatterClouds();
+scatterDirtMarks();
 scatterCacti();
 initBackgroundActors();
 
