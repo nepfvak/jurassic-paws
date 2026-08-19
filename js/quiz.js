@@ -265,6 +265,40 @@ function canShareFiles() {
   }
 }
 
+// ---- generates a wide (1600px), randomized terraced topsoil boundary on a
+// scratch canvas — a random-walk of step heights, not independent noise per
+// segment, so it reads as calm terrain rather than jagged static. Wide
+// enough (vs. a small repeating tile) that scrolling it doesn't read as an
+// obvious loop. Random per page load. Returns a data URL. ----
+function generateTopsoilTexture() {
+  const w = 1600;
+  const h = 44;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = cssVar("dirt-light");
+
+  const deltas = [-8, -4, 0, 0, 4, 8];
+  const segments = [];
+  let x = 0;
+  let height = 16;
+  while (x < w) {
+    const segW = 20 + Math.floor(Math.random() * 29);
+    height = Math.max(6, Math.min(30, height + deltas[Math.floor(Math.random() * deltas.length)]));
+    segments.push([x, Math.min(segW, w - x), height]);
+    x += segW;
+  }
+  // force the last segment's height to match the first so the tile wraps
+  // with no visible seam
+  const last = segments[segments.length - 1];
+  segments[segments.length - 1] = [last[0], w - last[0], segments[0][2]];
+
+  segments.forEach(([sx, sw, sh]) => ctx.fillRect(sx, 0, sw, sh));
+
+  return canvas.toDataURL();
+}
+
 // ---- twinkling stars, scattered across the upper sky ----
 function scatterStars() {
   const field = document.getElementById("star-field");
@@ -437,6 +471,9 @@ scatterStars();
 scatterClouds();
 scatterCacti();
 initBackgroundActors();
+
+const dirtTopsoil = document.getElementById("dirt-topsoil");
+if (dirtTopsoil) dirtTopsoil.style.backgroundImage = `url(${generateTopsoilTexture()})`;
 
 $("btn-start").addEventListener("click", () => {
   showScreen("screen-intake");

@@ -205,11 +205,34 @@ body {
   height: 34vh;
   min-height: 220px;
   z-index: 0;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAABEElEQVR4nGPsijJlwAb0g0IZGBgurlvNQBxgwSVBvBEQwMRAJcBEpDp5RWF5RWFKDZIHG/Hw/lvCYXTpwWsGBgY9BVGsih7iNQLFRRAjIMaRB5h0DJThZn389puBgeHwtWfkGMQA1kmk5kswJ2MGPCOuBInLFD0c4YgzQWIFemBTNpy4DeEGWKhiNwjTTv2gUEgSP3ztma2WFKZ+nOkI2RR5RWGIKZB8Bzcaa+RiCSOItg/n901cfgKr5Zjg0oPXLJRn10tgB5KfaXUMlJHTIAnRjx8Q6yIdmOWkGUQw0+lgmMtEpClXLtwlx0WY+WADLDXjMheLQbhyE36jUQzSDwpFTsTIgGDKREmQpCZFZAAANNNfchirs7MAAAAASUVORK5CYII=");
-  background-repeat: repeat;
-  background-size: 144px 144px;
-  image-rendering: pixelated;
+  /* solid layered look instead of a busy tiled texture — top-to-bottom
+     depth gradient, with a randomized terraced topsoil band
+     (.dirt-topsoil below) scrolling on top */
+  background: linear-gradient(to bottom, var(--dirt), var(--dirt-dark));
   overflow: hidden;
+}
+
+/* generated fresh each page load (js/quiz.js, generateTopsoilTexture) as
+   a wide (1600px), randomized terraced boundary — not a small repeating
+   tile, so scrolling it doesn't read as an obvious loop. Random-walk
+   step heights keep it looking like calm terrain rather than jagged
+   noise. */
+.dirt-topsoil {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background-repeat: repeat-x;
+  background-position-x: 0;
+  background-size: 1600px 44px;
+  image-rendering: pixelated;
+  animation: topsoil-scroll 9s steps(200) infinite;
+}
+
+@keyframes topsoil-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: -1600px; }
 }
 
 /* jagged grass-to-dirt edge along the top, Stardew-style */
