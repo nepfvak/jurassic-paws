@@ -159,7 +159,10 @@ body {
   height: 55px;
   bottom: var(--horizon);
   left: 8%;
-  opacity: 0.8;
+  /* fully opaque, not translucent like the other background decoration —
+     it needs to solidly occlude a cactus passing behind it (z-index:1
+     above), otherwise the cactus shows through and looks like phasing */
+  opacity: 1;
   /* assets/dino-runner.png is pre-resized to exactly 648x55 (9 frames of
      72x55) via Pillow/LANCZOS — displayed here at native 1:1, no runtime
      scaling, since scaling it live with image-rendering:pixelated sampled
