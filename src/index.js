@@ -45,7 +45,7 @@ async function handleSubmit(request, env) {
   try {
     await appendToSheet(env, { name, email, uuid, result, resultCode, competency, secondary, scores, submittedAt });
   } catch (err) {
-    console.error("Sheet append failed:", err);
+    console.error("Sheet append failed:", err && err.name, "-", err && err.message);
     return jsonResponse({ ok: false, error: "Sheet append failed" }, 502);
   }
 
@@ -125,9 +125,19 @@ async function getGoogleAccessToken(env) {
 }
 
 async function importPrivateKey(pem) {
+  if (typeof pem !== "string" || !pem.trim()) {
+    throw new Error(`GOOGLE_PRIVATE_KEY is ${typeof pem === "string" ? "empty" : "unset"} (got ${typeof pem})`);
+  }
+
   // The private key is usually stored in the env var with literal "\n"
   // sequences instead of real newlines — normalize both cases.
   const normalized = pem.includes("\\n") ? pem.replace(/\\n/g, "\n") : pem;
+
+  if (!normalized.includes("BEGIN PRIVATE KEY")) {
+    throw new Error(
+      `GOOGLE_PRIVATE_KEY has no BEGIN PRIVATE KEY marker (length ${normalized.length}, starts ${JSON.stringify(normalized.slice(0, 15))})`
+    );
+  }
 
   const pemBody = normalized
     .replace("-----BEGIN PRIVATE KEY-----", "")
@@ -136,13 +146,17 @@ async function importPrivateKey(pem) {
 
   const binaryDer = base64ToArrayBuffer(pemBody);
 
-  return crypto.subtle.importKey(
-    "pkcs8",
-    binaryDer,
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
+  try {
+    return await crypto.subtle.importKey(
+      "pkcs8",
+      binaryDer,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+  } catch (err) {
+    throw new Error(`crypto.subtle.importKey rejected it (derBytes=${binaryDer.byteLength}): ${err && err.message}`);
+  }
 }
 
 // ============================================================
